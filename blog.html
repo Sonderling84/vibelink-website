@@ -183,12 +183,13 @@
     }
 
     .post-body {
-      padding: 14px 16px;
+      padding: 0 16px;
       max-height: 0;
       overflow: hidden;
-      transition: max-height 0.4s ease;
+      transition: max-height 0.4s ease, padding 0.4s ease;
     }
     .post.open .post-body {
+      padding: 14px 16px;
       max-height: 3000px;
     }
 
@@ -717,10 +718,8 @@
 
 <!-- Info Buttons -->
 <div class="info-bar">
-  <button class="info-btn" onclick="showInfo('about')">? Was ist das hier</button>
-  <button class="info-btn" onclick="showInfo('brain')">? Second Brain</button>
-  <button class="info-btn" onclick="showInfo('autistic')">? Autistic Brain</button>
-  <button class="info-btn" onclick="showInfo('tech')">? Wie funktioniert das</button>
+  <button class="info-btn" onclick="showInfo('about')">? ERKLÄRUNG ZUM BLOG</button>
+  <button class="info-btn" onclick="showSection('projects')">▦ PROJEKTE &amp; APPS</button>
 </div>
 
 <button class="info-fab" id="info-fab" onclick="showInfoPanel()">? INFO</button>
@@ -1080,7 +1079,9 @@ function renderPosts() {
   let html = '';
   pagePosts.forEach((post, idx) => {
     const i = startIdx + idx;
-    const openClass = i === 0 ? 'open' : '';
+    // Kein Beitrag wird automatisch aufgeklappt -> man sieht sofort die Liste
+    // der neuesten Titel + Datum und klickt selbst, was man lesen will.
+    const openClass = '';
     const P = LP(post);
     html += `
       <div class="post ${openClass}" id="post-${i}">
@@ -1441,10 +1442,11 @@ function showInfoPanel() { showInfo('about'); }
 function initInfoSection() {
   const bar = document.querySelector('.info-bar');
   const fab = document.getElementById('info-fab');
-  // Intro oeffnet sich NICHT mehr automatisch und liest sich NICHT selbst vor.
-  // Nur noch manuell ueber den Button "? Was ist das hier" / das Info-Icon erreichbar.
-  if (bar) bar.classList.add('hidden');
-  if (fab) fab.classList.add('visible');
+  // Intro oeffnet sich NICHT automatisch und liest sich NICHT selbst vor.
+  // Die Buttonleiste ("ERKLAERUNG ZUM BLOG" / "PROJEKTE & APPS") bleibt sichtbar,
+  // damit man die Erklaerung bei Bedarf selbst aufrufen kann.
+  if (bar) bar.classList.remove('hidden');
+  if (fab) fab.classList.remove('visible');
 }
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initInfoSection);
