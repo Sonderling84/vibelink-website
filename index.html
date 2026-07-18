@@ -234,16 +234,43 @@
   <video class="video-bg" id="bgVideo" autoplay muted loop playsinline></video>
 </div>
 <script>
-/* Zufalls-Hintergrund: bei jedem Aufruf wird einer aus der Liste gezogen.
-   Neue Hintergruende einfach hier in die Liste eintragen. */
+/* Hintergrund-Rotation:
+   - beim Laden wird zufaellig einer aus BGS gezogen
+   - danach wird alle 60 Sekunden sanft zum naechsten ueberblendet
+   Neue Hintergruende einfach unten in die Liste BGS eintragen. */
 (function () {
   var BGS = ["startseite.mp4", "startseite2.mp4"];
+  var WECHSEL_MS = 60000;  // alle 60 Sekunden wechseln
+  var FADE_MS = 1200;      // Dauer der Ueberblendung
+
   var v = document.getElementById("bgVideo");
   if (!v) return;
-  v.src = BGS[Math.floor(Math.random() * BGS.length)];
-  v.load();
-  var p = v.play();
-  if (p && p.catch) p.catch(function () {});
+
+  var i = Math.floor(Math.random() * BGS.length);
+
+  function play() {
+    var p = v.play();
+    if (p && p.catch) p.catch(function () {});
+  }
+  function setSrc(idx) {
+    v.src = BGS[idx];
+    v.load();
+    play();
+  }
+
+  v.style.transition = "opacity " + FADE_MS + "ms ease";
+  setSrc(i);
+
+  if (BGS.length > 1) {
+    setInterval(function () {
+      v.style.opacity = "0";
+      setTimeout(function () {
+        i = (i + 1) % BGS.length;
+        setSrc(i);
+        v.style.opacity = "1";
+      }, FADE_MS);
+    }, WECHSEL_MS);
+  }
 })();
 </script>
 

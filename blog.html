@@ -1004,6 +1004,17 @@ function toggleLang() {
   applyLang();
 }
 
+// ═══ BLOG-SEITEN (Blaettern) ═══
+const BLOG_PER_PAGE = 5;    // wie viele Beitraege pro Seite angezeigt werden
+let BLOG_PAGE = 0;          // aktuelle Seite (0 = neueste)
+
+function changeBlogPage(delta) {
+  BLOG_PAGE += delta;
+  renderPosts();
+  const top = document.getElementById('posts-container');
+  if (top) top.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 function renderPosts() {
   const container = document.getElementById('posts-container');
   const loading = document.getElementById('loading');
@@ -1021,9 +1032,16 @@ function renderPosts() {
   const tickerParts = sorted.map(p => `▸ ${p.date}: ${LP(p).title.substring(0, 50)}...`);
   document.getElementById('ticker').textContent = tickerParts.join('  ') + '  ▸ SYSTEM AKTIV ▸ Blog-Agent 3×/Tag ▸ Hermes Zentrale (AES-256) ▸ ';
 
-  // Render
+  // Render: nur die Beitraege der aktuellen Seite
+  const seitenGesamt = Math.max(1, Math.ceil(sorted.length / BLOG_PER_PAGE));
+  if (BLOG_PAGE > seitenGesamt - 1) BLOG_PAGE = seitenGesamt - 1;
+  if (BLOG_PAGE < 0) BLOG_PAGE = 0;
+  const startIdx = BLOG_PAGE * BLOG_PER_PAGE;
+  const pagePosts = sorted.slice(startIdx, startIdx + BLOG_PER_PAGE);
+
   let html = '';
-  sorted.forEach((post, i) => {
+  pagePosts.forEach((post, idx) => {
+    const i = startIdx + idx;
     const openClass = i === 0 ? 'open' : '';
     const P = LP(post);
     html += `
@@ -1053,6 +1071,28 @@ function renderPosts() {
       </div>
     `;
   });
+
+  // Blaetter-Leiste (nur wenn es mehr als eine Seite gibt)
+  if (seitenGesamt > 1) {
+    const mkBtn = (label, delta, disabled) =>
+      `<button onclick="changeBlogPage(${delta})" ${disabled ? 'disabled' : ''} style="`
+      + `font-family:inherit;font-size:0.75rem;letter-spacing:1px;padding:7px 16px;`
+      + `background:transparent;border:1px solid ${disabled ? '#2b5540' : 'var(--dos-green, #4f4)'};`
+      + `color:${disabled ? '#2b5540' : 'var(--dos-green, #4f4)'};`
+      + `cursor:${disabled ? 'default' : 'pointer'};">${label}</button>`;
+
+    const von = startIdx + 1;
+    const bis = startIdx + pagePosts.length;
+
+    html += `
+      <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:14px;margin:20px 0 28px;">
+        ${mkBtn('◀ NEUER', -1, BLOG_PAGE === 0)}
+        <span style="font-size:0.75rem;letter-spacing:1px;color:var(--dos-cyan, #3dd);">
+          SEITE ${BLOG_PAGE + 1}/${seitenGesamt} &nbsp;·&nbsp; BEITRAG ${von}-${bis} VON ${sorted.length}
+        </span>
+        ${mkBtn('ÄLTER ▶', 1, BLOG_PAGE >= seitenGesamt - 1)}
+      </div>`;
+  }
 
   if (loading) loading.style.display = 'none';
   container.innerHTML = html + (container.querySelector('.footer')?.outerHTML || '');
