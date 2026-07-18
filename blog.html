@@ -636,10 +636,48 @@
 
 <!-- Video Background -->
 <div class="video-bg-container">
-  <video class="video-bg" autoplay muted loop playsinline>
-    <source src="startseite.mp4" type="video/mp4">
-  </video>
+  <video class="video-bg" id="blogBgVideo" autoplay muted loop playsinline></video>
 </div>
+<script>
+/* Blog-Hintergruende:
+   - beim Laden wird zufaellig einer aus BLOG_BGS gezogen
+   - danach alle 60 Sekunden sanfte Ueberblendung zum naechsten
+   Neue Hintergruende einfach unten in die Liste eintragen. */
+(function () {
+  var BLOG_BGS = ["blog-bg1.mp4", "startseite.mp4", "startseite2.mp4"];
+  var WECHSEL_MS = 60000;
+  var FADE_MS = 1200;
+
+  var v = document.getElementById("blogBgVideo");
+  if (!v) return;
+
+  var i = Math.floor(Math.random() * BLOG_BGS.length);
+
+  function play() {
+    var p = v.play();
+    if (p && p.catch) p.catch(function () {});
+  }
+  function setSrc(idx) {
+    v.src = BLOG_BGS[idx];
+    v.load();
+    play();
+  }
+
+  v.style.transition = "opacity " + FADE_MS + "ms ease";
+  setSrc(i);
+
+  if (BLOG_BGS.length > 1) {
+    setInterval(function () {
+      v.style.opacity = "0";
+      setTimeout(function () {
+        i = (i + 1) % BLOG_BGS.length;
+        setSrc(i);
+        v.style.opacity = "1";
+      }, FADE_MS);
+    }, WECHSEL_MS);
+  }
+})();
+</script>
 
 <!-- DOS Menu Bar -->
 <div class="dos-menubar">
