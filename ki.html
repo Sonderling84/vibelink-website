@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VIBE.LINK — KI &amp; Automatisierung</title>
+<meta name="description" content="Vibe.Link — KI-Entwicklung, Agents und Automatisierung. Plus der automatisierte Dev-Blog aus dem Maschinenraum.">
+<style>
+  :root {
+    --dos-bg: #050a05;
+    --dos-green: #33ff33;
+    --dos-dim: #1f8f2f;
+    --dos-cyan: #33e0e0;
+    --dos-amber: #ffb000;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--dos-bg);
+    color: var(--dos-green);
+    font-family: "Courier New", Courier, monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  .video-bg-container {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 0; overflow: hidden;
+  }
+  .video-bg {
+    position: absolute; top: 50%; left: 50%;
+    min-width: 100%; min-height: 100%;
+    width: auto; height: auto;
+    transform: translate(-50%, -50%);
+    object-fit: cover; opacity: 1;
+  }
+  .overlay {
+    position: fixed; inset: 0; z-index: 1;
+    background: rgba(0, 12, 0, 0.72);
+  }
+  .scanlines {
+    position: fixed; inset: 0; z-index: 2; pointer-events: none;
+    background: repeating-linear-gradient(
+      to bottom, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px,
+      rgba(0,0,0,0.25) 3px, rgba(0,0,0,0) 4px);
+  }
+</style>
+</head>
+<style>
+  .menubar {
+    position: relative; z-index: 5;
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(0,0,0,0.85);
+    border-bottom: 1px solid var(--dos-dim);
+    padding: 6px 10px; font-size: 0.9rem; flex-wrap: wrap;
+  }
+  .menubar a, .menubar span { color: var(--dos-green); text-decoration: none; padding: 3px 10px; }
+  .menubar a:hover { background: var(--dos-green); color: #000; }
+  .menubar .active { background: #000; color: var(--dos-cyan); border: 1px solid var(--dos-dim); }
+
+  .wrap { position: relative; z-index: 5; max-width: 900px; margin: 0 auto; padding: 28px 18px 60px; }
+
+  .logo {
+    font-size: clamp(2rem, 7vw, 4rem); letter-spacing: 6px;
+    color: var(--dos-cyan); text-shadow: 0 0 18px rgba(51,224,224,0.5);
+    margin: 10px 0 2px;
+  }
+  .sub { color: var(--dos-dim); letter-spacing: 2px; font-size: 0.8rem; margin-bottom: 26px; }
+  .prompt { color: var(--dos-amber); margin: 26px 0 10px; font-size: 0.9rem; }
+
+  .card {
+    background: rgba(0, 14, 4, 0.82);
+    border: 1px solid var(--dos-dim);
+    padding: 18px 20px; margin-bottom: 16px;
+  }
+  .card h2 { margin: 0 0 8px; font-size: 1rem; color: var(--dos-cyan); letter-spacing: 2px; }
+  .card p { margin: 0 0 8px; line-height: 1.6; font-size: 0.92rem; color: #bdf5bd; }
+
+  .blogcard { border-color: var(--dos-green); box-shadow: 0 0 22px rgba(51,255,51,0.16); }
+  .btn {
+    display: inline-block; margin-top: 10px; padding: 10px 20px;
+    border: 1px solid var(--dos-green); color: var(--dos-green);
+    text-decoration: none; letter-spacing: 2px; font-size: 0.85rem;
+  }
+  .btn:hover { background: var(--dos-green); color: #000; }
+  .tags { margin-top: 10px; }
+  .tag { display: inline-block; border: 1px solid var(--dos-dim); color: var(--dos-dim);
+         padding: 2px 8px; margin: 3px 4px 0 0; font-size: 0.75rem; }
+  .footer { margin-top: 40px; text-align: center; color: var(--dos-dim); font-size: 0.78rem; line-height: 1.7; }
+</style>
+<body>
+
+<div class="video-bg-container">
+  <video class="video-bg" id="kiBgVideo" data-bereich="ki" data-fallback="blog-bg1.mp4"
+         autoplay muted loop playsinline></video>
+</div>
+<div class="overlay"></div>
+<div class="scanlines"></div>
+
+<div class="menubar">
+  <span>≡ SYSTEM</span>
+  <a href="index.html">Startseite</a>
+  <span class="active">KI</span>
+  <a href="blog.html">Blog</a>
+  <a href="index.html#projekte">Projekte</a>
+  <a href="index.html#kontakt">Kontakt</a>
+</div>
+
+<div class="wrap">
+  <div class="logo">KI &amp; AUTOMATISIERUNG</div>
+  <div class="sub">DEV://KI — AGENTS · WORKFLOWS · APPS</div>
+
+  <div class="prompt">C:\KI&gt; dir /w █</div>
+
+  <div class="card blogcard">
+    <h2>▸ DEV-BLOG — DER MASCHINENRAUM</h2>
+    <p>
+      Mein Blog schreibt sich selbst: Agents dokumentieren automatisch, woran ich gerade
+      arbeite — was funktioniert, was schiefgeht, was ich gelernt habe. Kein Copy-Paste,
+      kein manuelles Tippen.
+    </p>
+    <p>Jeder Beitrag lässt sich vorlesen. Neueste Einträge stehen oben.</p>
+    <a class="btn" href="blog.html">▶ ZUM BLOG</a>
+    <div class="tags">
+      <span class="tag">#automatisierung</span>
+      <span class="tag">#agents</span>
+      <span class="tag">#n8n</span>
+      <span class="tag">#self-hosting</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>▸ AGENTS &amp; WORKFLOWS</h2>
+    <p>
+      Automatisierte Abläufe, die im Hintergrund laufen: E-Mails sortieren und labeln,
+      Inhalte erzeugen, Dateien ablegen, Systeme überwachen. Gebaut mit n8n, eigenen
+      Skripten und KI-Modellen.
+    </p>
+    <div class="tags">
+      <span class="tag">#n8n</span><span class="tag">#gemini</span><span class="tag">#workflows</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>▸ APPS</h2>
+    <p>
+      Eigene Anwendungen — vom iRacing-Telemetrie-Dashboard bis zu kleinen Helfern,
+      die konkrete Probleme lösen. Für Abonnenten zum Download.
+    </p>
+    <div class="tags">
+      <span class="tag">#apps</span><span class="tag">#tools</span><span class="tag">#downloads</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>▸ WORAN ICH GERADE BAUE</h2>
+    <p>
+      Diese Seite wächst laufend. Aktuellster Stand steht immer im Blog —
+      dort dokumentieren die Agents selbstständig mit.
+    </p>
+    <a class="btn" href="blog.html">▶ AKTUELLE EINTRÄGE</a>
+  </div>
+
+  <div class="footer">
+    ═══ EOF ═══<br>
+    VIBE.LINK v1.0 · vibe.link · Powered by Hermes Zentrale + n8n<br>
+    © 2026 Vibe.Link · Alle Rechte vorbehalten
+  </div>
+</div>
+
+<script src="bg-rotator.js" defer></script>
+</body>
+</html>
