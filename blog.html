@@ -738,6 +738,9 @@
 <!-- DOS Menu Bar -->
 <div class="dos-menubar">
   <span>≡ SYSTEM</span>
+  <span onclick="if (history.length > 1) { history.back(); } else { location.href='ki.html'; }"
+        style="color:#4fd8ff;border:1px solid #4fd8ff;padding:1px 10px;font-weight:bold;"
+        title="Zurueck zur vorherigen Seite">◀ ZURÜCK</span>
   <span onclick="location.href='index.html'" data-i18n="nav_home">Startseite</span>
   <span onclick="location.href='ki.html'">KI</span>
   <span onclick="showSection('blog')" style="background:#000;color:#33ff33;" data-i18n="nav_blog">Blog</span>
