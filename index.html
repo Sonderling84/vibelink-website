@@ -231,10 +231,21 @@
 
 <!-- Video Background -->
 <div class="video-bg-container">
-  <video class="video-bg" autoplay muted loop playsinline>
-    <source src="startseite.mp4" type="video/mp4">
-  </video>
+  <video class="video-bg" id="bgVideo" autoplay muted loop playsinline></video>
 </div>
+<script>
+/* Zufalls-Hintergrund: bei jedem Aufruf wird einer aus der Liste gezogen.
+   Neue Hintergruende einfach hier in die Liste eintragen. */
+(function () {
+  var BGS = ["startseite.mp4", "startseite2.mp4"];
+  var v = document.getElementById("bgVideo");
+  if (!v) return;
+  v.src = BGS[Math.floor(Math.random() * BGS.length)];
+  v.load();
+  var p = v.play();
+  if (p && p.catch) p.catch(function () {});
+})();
+</script>
 
 <!-- Overlays -->
 <div class="overlay"></div>
