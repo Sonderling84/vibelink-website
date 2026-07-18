@@ -1166,7 +1166,9 @@ function ttsPlayFallback(i, text) {
   utterance.pitch = 0.95;
 
   const voices = window.speechSynthesis.getVoices();
-  const deVoice = voices.find(v => v.lang.startsWith(LANG === 'en' ? 'en' : 'de')) || voices[0];
+  const deVoice = (LANG === 'en')
+    ? (voices.find(v => v.name === 'Google US English') || voices.find(v => v.lang.startsWith('en')) || voices[0])
+    : (voices.find(v => v.name === 'Google Deutsch') || voices.find(v => /Katja|Stefan/.test(v.name)) || voices.find(v => v.lang.startsWith('de')) || voices[0]);
   if (deVoice) utterance.voice = deVoice;
   
   const btn = document.getElementById(`tts-btn-${i}`);
@@ -1361,21 +1363,10 @@ function showInfoPanel() { showInfo('about'); }
 function initInfoSection() {
   const bar = document.querySelector('.info-bar');
   const fab = document.getElementById('info-fab');
-  if (_infoSeen) {
-    bar.classList.add('hidden');
-    fab.classList.add('visible');
-  } else {
-    setTimeout(() => {
-      showInfo('about');
-      try {
-        const allText = INFO_DATA.about.lines.map(l => l.replace(/<[^>]*>/g, '')).filter(Boolean).join('. ');
-        const utter = new SpeechSynthesisUtterance(allText);
-        utter.lang = 'de-DE';
-        utter.rate = 1.1;
-        speechSynthesis.speak(utter);
-      } catch(e) {}
-    }, 1200);
-  }
+  // Intro oeffnet sich NICHT mehr automatisch und liest sich NICHT selbst vor.
+  // Nur noch manuell ueber den Button "? Was ist das hier" / das Info-Icon erreichbar.
+  if (bar) bar.classList.add('hidden');
+  if (fab) fab.classList.add('visible');
 }
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initInfoSection);
