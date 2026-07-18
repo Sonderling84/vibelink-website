@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-8L94X9D09W"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-8L94X9D09W', { 'anonymize_ip': true });
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+  <title>VIBE.LINK — Tobias Ganster</title>
+  <meta name="description" content="Tobias Ganster — KI-Entwickler, App-Builder, Automatisierer. Alles wird automatisiert.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Pixelify+Sans:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --dos-green: #39ff14;
+      --dos-amber: #ffb627;
+      --dos-cyan: #00f0ff;
+      --dos-red: #ff3355;
+      --dos-white: #d4d4d4;
+      --dos-dim: #4a9e4a;
+      --dos-bg: #050a05;
+      --font-main: 'Space Mono', 'Courier New', monospace;
+      --font-pixel: 'Silkscreen', 'Pixelify Sans', monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; height: 100%; overflow: hidden; }
+    body {
+      background: var(--dos-bg);
+      color: var(--dos-green);
+      font-family: var(--font-main);
+    }
+
+    /* Video Background */
+    .video-bg-container {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .video-bg {
+      position: absolute;
+      top: 50%; left: 50%;
+      min-width: 100%; min-height: 100%;
+      width: auto; height: auto;
+      transform: translate(-50%, -50%);
+      object-fit: cover;
+      opacity: 1.0;
+    }
+
+    /* Dark overlay */
+    .overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      z-index: 1;
+      background: radial-gradient(ellipse at center, rgba(5,10,5,0.0) 0%, rgba(5,10,5,0.15) 100%);
+    }
+
+    /* CRT scanlines */
+    .scanlines {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      z-index: 2;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.06) 0px,
+        rgba(0,0,0,0.06) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+    }
+
+    /* Content */
+    .content {
+      position: relative;
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .logo {
+      font-family: var(--font-pixel);
+      font-size: 3.5rem;
+      color: var(--dos-cyan);
+      text-shadow: 0 0 20px rgba(0,240,255,0.6), 0 0 60px rgba(0,240,255,0.2);
+      letter-spacing: 8px;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-family: var(--font-pixel);
+      font-size: 0.7rem;
+      color: var(--dos-dim);
+      letter-spacing: 3px;
+      margin-bottom: 50px;
+    }
+
+    .name {
+      font-family: var(--font-main);
+      font-size: 1.1rem;
+      color: var(--dos-amber);
+      margin-bottom: 6px;
+      text-shadow: 0 0 10px rgba(255,182,39,0.4);
+    }
+
+    .tagline {
+      font-family: var(--font-main);
+      font-size: 0.85rem;
+      color: var(--dos-dim);
+      margin-bottom: 50px;
+    }
+
+    /* Navigation Links */
+    .nav-links {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 40px;
+    }
+    .nav-link {
+      font-family: var(--font-pixel);
+      font-size: 0.6rem;
+      color: var(--dos-green);
+      border: 1px solid var(--dos-dim);
+      padding: 8px 24px;
+      text-decoration: none;
+      letter-spacing: 2px;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .nav-link:hover {
+      border-color: var(--dos-cyan);
+      color: var(--dos-cyan);
+      box-shadow: 0 0 15px rgba(0,240,255,0.3);
+      text-shadow: 0 0 8px rgba(0,240,255,0.5);
+    }
+
+    /* Social Links */
+    .social-links {
+      display: flex;
+      gap: 28px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .social-link {
+      font-size: 1.8rem;
+      color: var(--dos-green);
+      text-decoration: none;
+      transition: all 0.2s;
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      text-shadow: 0 0 6px rgba(57,255,20,0.3);
+    }
+    .social-link .label {
+      font-family: var(--font-pixel);
+      font-size: 0.4rem;
+      letter-spacing: 1px;
+    }
+    .social-link:hover {
+      color: var(--dos-cyan);
+      text-shadow: 0 0 15px rgba(0,240,255,0.6);
+      transform: scale(1.15);
+    }
+
+    /* Status bar */
+    .status-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0; right: 0;
+      z-index: 10;
+      background: rgba(5,10,5,0.95);
+      border-top: 1px solid var(--dos-dim);
+      padding: 4px 16px;
+      font-size: 0.7rem;
+      color: var(--dos-dim);
+      display: flex;
+      justify-content: space-between;
+    }
+    .status-bar .online {
+      color: var(--dos-green);
+    }
+
+    /* Blink cursor */
+    .blink { animation: blink-cursor 1s step-end infinite; }
+    @keyframes blink-cursor {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    /* Mobile */
+    @media (max-width: 600px) {
+      .logo { font-size: 2rem; letter-spacing: 4px; }
+      .subtitle { font-size: 0.5rem; }
+      .nav-link { padding: 6px 16px; font-size: 0.5rem; }
+    }
+  
+    /* Desktop: video nicht so reinzoomen */
+    @media (min-width: 768px) {
+      .video-bg {
+        object-fit: contain !important;
+        background: #050a05;
+      }
+    }
+    /* Mobile: video fuellt den Screen */
+    @media (max-width: 767px) {
+      .video-bg {
+        object-fit: cover !important;
+      }
+    }
+
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+
+<!-- Video Background -->
+<div class="video-bg-container">
+  <video class="video-bg" autoplay muted loop playsinline>
+    <source src="startseite.mp4" type="video/mp4">
+  </video>
+</div>
+
+<!-- Overlays -->
+<div class="overlay"></div>
+<div class="scanlines"></div>
+
+<!-- Content -->
+<div class="content">
+  <div class="logo">VIBE.LINK</div>
+  <div class="subtitle">DEV://PORTFOLIO — KI · Automatisierung · Apps</div>
+
+  <div class="name">TOBIAS GANSTER</div>
+  <div class="tagline">KI-Entwickler · App-Builder · Alles wird automatisiert<span class="blink"> █</span></div>
+
+  <div class="nav-links">
+    <a class="nav-link" href="blog.html">▸ AI</a>
+    <a class="nav-link" href="#kunst">▸ KUNST</a>
+    <a class="nav-link" href="#gaming">▸ GAMING</a>
+    <a class="nav-link" href="blog.html">▸ HOMEPAGE</a>
+  </div>
+
+  <div class="social-links">
+    <a class="social-link" href="https://www.twitch.tv/tobiasganster" target="_blank" title="Twitch"><i class="fab fa-twitch"></i><span class="label">TWITCH</span></a>
+    <a class="social-link" href="https://kick.com/tobiasganster" target="_blank" title="Kick"><i class="fas fa-bolt"></i><span class="label">KICK</span></a>
+    <a class="social-link" href="https://github.com/tobiasganster" target="_blank" title="GitHub"><i class="fab fa-github"></i><span class="label">GITHUB</span></a>
+    <a class="social-link" href="https://www.instagram.com/tobiasganster" target="_blank" title="Instagram"><i class="fab fa-instagram"></i><span class="label">INSTA</span></a>
+    <a class="social-link" href="https://www.tiktok.com/@tobiasganster" target="_blank" title="TikTok"><i class="fab fa-tiktok"></i><span class="label">TIKTOK</span></a>
+    <a class="social-link" href="https://twitter.com/tobiasganster" target="_blank" title="X"><i class="fab fa-x-twitter"></i><span class="label">X</span></a>
+    <a class="social-link" href="https://www.youtube.com/@tobiasganster" target="_blank" title="YouTube"><i class="fab fa-youtube"></i><span class="label">YOUTUBE</span></a>
+  </div>
+</div>
+
+<!-- Status Bar -->
+<div class="status-bar">
+  <span>▸ <span class="online">SYSTEM AKTIV</span> · Beethovenstr. 2, Riegelsberg</span>
+  <span>© 2026 Vibe.Link</span>
+</div>
+
+</body>
+</html>

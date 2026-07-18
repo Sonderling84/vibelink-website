@@ -1,0 +1,1618 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VIBE.LINK — KI Dev Blog</title>
+  <meta name="description" content="Vibe.Link — KI-Entwickler Liveticker. Automatisierte Blog-Posts aus dem Maschinenraum.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Pixelify+Sans:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --dos-green: #39ff14;
+      --dos-amber: #ffb627;
+      --dos-cyan: #00f0ff;
+      --dos-red: #ff3355;
+      --dos-white: #d4d4d4;
+      --dos-dim: #4a9e4a;
+      --dos-bg: #050a05;
+      --dos-panel: #0a140a;
+      --dos-border: #1e4a1e;
+      --font-main: 'Space Mono', 'Courier New', monospace;
+      --font-pixel: 'Silkscreen', 'Pixelify Sans', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      font-size: 16px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--dos-dim) var(--dos-bg);
+    }
+
+    body {
+      background: var(--dos-bg);
+      color: var(--dos-green);
+      font-family: var(--font-main);
+      min-height: 100vh;
+      line-height: 1.7;
+      font-size: 15px;
+      letter-spacing: 0.3px;
+      text-shadow: 0 0 3px rgba(57,255,20,0.15);
+      -webkit-font-smoothing: none;
+    }
+
+    /* CRT Overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.06) 0px,
+        rgba(0,0,0,0.06) 1px,
+        transparent 1px,
+        transparent 3px
+      );
+    }
+
+    /* Phosphor glow */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9998;
+      background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.6) 100%);
+    }
+
+    /* ═══ TOP BAR (DOS Menu) ═══ */
+    .dos-menubar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--dos-white);
+      color: #000;
+      font-family: var(--font-main);
+      font-size: 1.25rem;
+      padding: 2px 8px;
+      display: flex;
+      gap: 4px;
+      border-bottom: 2px solid #888;
+      letter-spacing: 0;
+    }
+    .dos-menubar span {
+      padding: 0 10px;
+      cursor: pointer;
+    }
+    .dos-menubar span:first-child {
+      background: #000;
+      color: var(--dos-white);
+    }
+    .dos-menubar span:hover {
+      background: #000;
+      color: var(--dos-green);
+    }
+
+    /* ═══ HEADER ═══ */
+    .header {
+      padding: 20px 24px 10px;
+      border-bottom: 1px solid var(--dos-border);
+    }
+    .header-ascii {
+      color: var(--dos-cyan);
+      font-family: var(--font-main);
+      font-size: 0.85rem;
+      line-height: 1.15;
+      white-space: pre;
+      text-shadow: 0 0 12px rgba(0,240,255,0.5), 0 0 30px rgba(0,240,255,0.15);
+      overflow-x: auto;
+    }
+    .header-sub {
+      font-family: var(--font-pixel);
+      font-size: 0.75rem;
+      color: var(--dos-dim);
+      margin-top: 12px;
+      letter-spacing: 0.5px;
+    }
+    .header-status {
+      font-size: 1.15rem;
+      color: var(--dos-amber);
+      margin-top: 6px;
+    }
+    .blink {
+      animation: blink-cursor 1s step-end infinite;
+    }
+    @keyframes blink-cursor {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    /* ═══ MAIN CONTAINER ═══ */
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 16px 60px;
+    }
+
+    /* ═══ STATS BAR ═══ */
+    .stats-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 20px;
+      padding: 12px 24px;
+      border-bottom: 1px solid var(--dos-border);
+      font-size: 1.15rem;
+    }
+    .stat { color: var(--dos-dim); }
+    .stat b { color: var(--dos-green); }
+
+    /* ═══ POST CARD ═══ */
+    .post {
+      margin: 20px 0;
+      border: 1px solid var(--dos-border);
+      background: var(--dos-panel);
+      position: relative;
+      transition: border-color 0.2s;
+    }
+    .post:hover {
+      border-color: var(--dos-green);
+    }
+    .post:hover .post-title-bar {
+      background: #1a3a1a;
+    }
+
+    .post-title-bar {
+      background: #112211;
+      padding: 6px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--dos-border);
+      transition: background 0.2s;
+    }
+    .post-title-bar .filename {
+      color: var(--dos-amber);
+      font-size: 1.15rem;
+    }
+    .post-title-bar .date {
+      color: var(--dos-dim);
+      font-size: 1rem;
+    }
+
+    .post-body {
+      padding: 14px 16px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.4s ease;
+    }
+    .post.open .post-body {
+      max-height: 3000px;
+    }
+
+    .post-title {
+      font-family: var(--font-pixel);
+      font-size: 0.85rem;
+      color: var(--dos-cyan);
+      margin-bottom: 12px;
+      line-height: 1.8;
+      text-shadow: 0 0 8px rgba(0,240,255,0.35);
+    }
+    .post-desc {
+      color: var(--dos-dim);
+      font-size: 1.1rem;
+      margin-bottom: 12px;
+      font-style: italic;
+    }
+
+    .post-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .tag {
+      background: #1a2a1a;
+      border: 1px solid var(--dos-border);
+      color: var(--dos-green);
+      padding: 1px 8px;
+      font-size: 0.95rem;
+      cursor: default;
+    }
+
+    .post-content {
+      font-size: 0.95rem;
+      color: var(--dos-green);
+      line-height: 1.8;
+    }
+    .post-content h2 {
+      color: var(--dos-cyan);
+      font-family: var(--font-pixel);
+      font-size: 0.75rem;
+      margin: 24px 0 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px dashed var(--dos-border);
+      text-shadow: 0 0 8px rgba(0,240,255,0.35);
+    }
+    .post-content p {
+      margin-bottom: 12px;
+    }
+    .post-content strong {
+      color: var(--dos-amber);
+    }
+    .post-content em {
+      color: var(--dos-dim);
+    }
+    .post-content code {
+      background: #000;
+      color: var(--dos-amber);
+      padding: 1px 5px;
+      border: 1px solid #333;
+    }
+    .post-content ol, .post-content ul {
+      margin: 8px 0 12px 20px;
+    }
+    .post-content li {
+      margin-bottom: 4px;
+    }
+
+    /* ═══ TTS PLAYER ═══ */
+    .tts-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-top: 1px solid var(--dos-border);
+      border-bottom: 1px solid var(--dos-border);
+      background: #080f08;
+    }
+    .tts-btn {
+      background: none;
+      border: 1px solid var(--dos-border);
+      color: var(--dos-green);
+      font-family: var(--font-pixel);
+      font-size: 0.6rem;
+      padding: 4px 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+          box-shadow: 0 0 6px rgba(0,240,255,0.15);
+    }
+    .tts-btn:hover {
+      background: var(--dos-green);
+      color: #000;
+      border-color: var(--dos-green);
+      box-shadow: 0 0 10px rgba(57,255,20,0.4);
+    }
+    .tts-btn.active {
+      background: var(--dos-cyan);
+      color: #000;
+      border-color: var(--dos-cyan);
+      animation: tts-blink 1s ease-in-out infinite;
+      box-shadow: 0 0 16px rgba(0,240,255,0.5);
+    }
+    @keyframes tts-blink {
+      0%, 100% { opacity: 1; box-shadow: 0 0 16px rgba(0,240,255,0.5); }
+      50% { opacity: 0.7; box-shadow: 0 0 30px rgba(0,240,255,0.8); }
+      animation: pulse-glow 1.5s ease infinite;
+    }
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 5px rgba(255,182,39,0.3); }
+      50% { box-shadow: 0 0 15px rgba(255,182,39,0.6); }
+    }
+    .tts-status {
+      color: var(--dos-dim);
+      font-size: 0.8rem;
+      flex: 1;
+    }
+    .tts-speed {
+      color: var(--dos-amber);
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+
+    .post-toggle {
+      text-align: center;
+      padding: 6px;
+      border-top: 1px solid var(--dos-border);
+      cursor: pointer;
+      color: var(--dos-dim);
+      font-size: 0.85rem;
+      font-family: var(--font-pixel);
+      transition: color 0.2s;
+    }
+    .post-toggle:hover {
+      color: var(--dos-green);
+    }
+
+    /* ═══ LIVE TICKER ═══ */
+    .ticker-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: #111;
+      border-top: 2px solid var(--dos-green);
+      padding: 4px 0;
+      overflow: hidden;
+      height: 28px;
+    }
+    .ticker-text {
+      display: inline-block;
+      white-space: nowrap;
+      color: var(--dos-green);
+      font-size: 1.1rem;
+      animation: ticker-scroll 40s linear infinite;
+      text-shadow: 0 0 4px rgba(51,255,51,0.4);
+    }
+    @keyframes ticker-scroll {
+      0%   { transform: translateX(100vw); }
+      100% { transform: translateX(-100%); }
+    }
+
+    /* ═══ LOADING ═══ */
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: var(--dos-amber);
+      font-size: 1.2rem;
+    }
+    .loading::after {
+      content: '...';
+      animation: dots 1.5s step-end infinite;
+    }
+    @keyframes dots {
+      0%   { content: '.'; }
+      33%  { content: '..'; }
+      66%  { content: '...'; }
+    }
+
+    /* ═══ FOOTER ═══ */
+    .footer {
+      text-align: center;
+      padding: 20px;
+      color: var(--dos-dim);
+      font-size: 0.95rem;
+      border-top: 1px solid var(--dos-border);
+      margin-bottom: 30px;
+    }
+
+    /* ═══ RESPONSIVE ═══ */
+    @media (max-width: 600px) {
+      .header-ascii { font-size: 0.35rem; }
+      .post-title { font-size: 0.6rem; }
+      .post-content h2 { font-size: 0.55rem; }
+      .stats-bar { padding: 6px 10px; font-size: 0.7rem; }
+      .container { padding: 0 6px 60px; }
+      .tts-bar { flex-wrap: wrap; }
+      .quote-popup { max-width: 90vw; }
+
+      /* Mobile Nav Fix */
+      .dos-menubar {
+        font-size: 0.75rem;
+        padding: 2px 4px;
+        gap: 0;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .dos-menubar span {
+        padding: 3px 8px;
+        font-size: 0.7rem;
+      }
+
+      /* Header kleiner */
+      .header { padding: 12px 12px 6px; }
+      .header h1 { font-size: 1rem; }
+
+      /* Posts kompakter */
+      .post { margin: 8px 0; }
+      .post-content { padding: 8px 10px; }
+      .post-content p, .post-content li { font-size: 0.8rem; }
+
+      /* Ghost strip anpassen */
+      .ghost-strip { font-size: 0.65rem; bottom: 0; height: 26px; }
+    }
+
+    @media (max-width: 400px) {
+      .dos-menubar span { padding: 2px 6px; font-size: 0.65rem; }
+      .header-ascii { font-size: 0.28rem; }
+      body { font-size: 13px; }
+    }
+
+    /* ═══ GHOST TYPIST ═══ */
+    .ghost-strip {
+      position: fixed;
+      bottom: 28px;
+      left: 0;
+      right: 0;
+      z-index: 101;
+      height: 30px;
+      background: rgba(5,10,5,0.95);
+      border-top: 1px solid var(--dos-border);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      overflow: hidden;
+    }
+    .ghost-strip .ghost-prefix {
+      color: var(--dos-dim);
+      font-family: var(--font-main);
+      font-size: 0.85rem;
+      margin-right: 8px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .ghost-type {
+      font-family: var(--font-main);
+      font-size: 0.85rem;
+      line-height: 30px;
+      white-space: nowrap;
+      overflow: hidden;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .ghost-type.visible {
+      opacity: 1;
+    }
+    .ghost-type.fading {
+      opacity: 0;
+      transition: opacity 1.2s;
+    }
+    .ghost-cursor {
+      display: inline;
+      color: var(--dos-green);
+      animation: gcBlink 0.7s step-end infinite;
+      text-shadow: 0 0 6px rgba(57,255,20,0.5);
+    }
+    @keyframes gcBlink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    /* ═══ INFO BUTTONS ═══ */
+    .info-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 8px 24px;
+      border-bottom: 1px solid var(--dos-border);
+    }
+    .info-btn {
+      background: none;
+      border: 1px solid var(--dos-border);
+      color: var(--dos-dim);
+      font-family: var(--font-pixel);
+      font-size: 0.55rem;
+      padding: 4px 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.5px;
+    }
+    .info-btn:hover {
+      border-color: var(--dos-cyan);
+      color: var(--dos-cyan);
+      box-shadow: 0 0 8px rgba(0,240,255,0.2);
+    }
+
+    
+    
+    /* PROJECTS SECTION */
+    .projects-section { max-width: 900px; margin: 0 auto; padding: 20px 16px 60px; display: none; }
+    .projects-section.active { display: block; }
+    .projects-header { font-family: var(--font-pixel); font-size: 0.75rem; color: var(--dos-cyan); margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px dashed var(--dos-border); text-shadow: 0 0 8px rgba(0,240,255,0.35); }
+    .project-card { border: 1px solid var(--dos-border); background: var(--dos-panel); padding: 12px 16px; margin-bottom: 10px; transition: border-color 0.2s; }
+    .project-card:hover { border-color: var(--dos-green); }
+    .project-name { font-family: var(--font-pixel); font-size: 0.7rem; color: var(--dos-amber); margin-bottom: 4px; }
+    .project-status { font-size: 0.8rem; color: var(--dos-dim); margin-bottom: 6px; }
+    .project-status .badge { display: inline-block; padding: 1px 8px; border: 1px solid; font-family: var(--font-pixel); font-size: 0.55rem; margin-right: 6px; }
+    .badge-active { border-color: var(--dos-green); color: var(--dos-green); }
+    .badge-planned { border-color: var(--dos-amber); color: var(--dos-amber); }
+    .badge-beta { border-color: var(--dos-cyan); color: var(--dos-cyan); }
+    .project-desc { font-size: 0.85rem; color: var(--dos-green); line-height: 1.7; }
+    /* PAGINATION */
+    .pagination { display: flex; justify-content: center; align-items: center; gap: 8px; padding: 16px 0; margin-top: 10px; }
+    .page-btn { background: none; border: 1px solid var(--dos-border); color: var(--dos-dim); font-family: var(--font-pixel); font-size: 0.6rem; padding: 4px 12px; cursor: pointer; transition: all 0.15s; }
+    .page-btn:hover { border-color: var(--dos-green); color: var(--dos-green); }
+    .page-btn.active { border-color: var(--dos-cyan); color: var(--dos-cyan); background: rgba(0,240,255,0.08); }
+    .page-btn:disabled { opacity: 0.3; cursor: default; }
+    .page-info { color: var(--dos-dim); font-size: 0.75rem; font-family: var(--font-pixel); }
+    .dos-menubar span.nav-active { background: #000 !important; color: var(--dos-green) !important; }
+
+    
+    /* VIDEO BACKGROUND */
+    .video-bg-container {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      z-index: -1;
+      overflow: hidden;
+    }
+    .video-bg {
+      position: absolute;
+      top: 50%; left: 50%;
+      min-width: 100%; min-height: 100%;
+      width: auto; height: auto;
+      transform: translate(-50%, -50%);
+      object-fit: cover;
+      opacity: 0.35;
+    }
+
+    /* ═══ INFO SIDEBAR BUTTON ═══ */
+    .info-fab {
+      position: fixed;
+      top: 50%;
+      left: 0;
+      transform: translateY(-50%) rotate(-90deg);
+      transform-origin: left bottom;
+      z-index: 450;
+      background: rgba(0,240,255,0.06);
+      border: 1px solid var(--dos-border);
+      border-left: none;
+      color: var(--dos-dim);
+      font-family: var(--font-pixel);
+      font-size: 0.5rem;
+      padding: 4px 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+      letter-spacing: 1px;
+      display: none;
+      white-space: nowrap;
+    }
+    .info-fab:hover {
+      border-color: var(--dos-cyan);
+      color: var(--dos-cyan);
+      background: rgba(0,240,255,0.12);
+      box-shadow: 0 0 8px rgba(0,240,255,0.2);
+    }
+    .info-fab.visible { display: block; }
+    .info-bar.hidden { display: none; }
+
+    /* ═══ INFO MODAL ═══ */
+    .info-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 500;
+      background: rgba(0,0,0,0.75);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .info-overlay.open {
+      display: flex;
+    }
+    .info-modal {
+      background: var(--dos-bg);
+      border: 1px solid var(--dos-cyan);
+      max-width: 620px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 0 40px rgba(0,240,255,0.1);
+    }
+    .info-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 14px;
+      background: rgba(0,240,255,0.08);
+      border-bottom: 1px solid var(--dos-border);
+    }
+    .info-modal-header span {
+      font-family: var(--font-pixel);
+      font-size: 0.65rem;
+      color: var(--dos-cyan);
+    }
+    .info-close {
+      background: none;
+      border: 1px solid var(--dos-border);
+      color: var(--dos-dim);
+      font-family: var(--font-pixel);
+      font-size: 0.6rem;
+      padding: 2px 10px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .info-close:hover {
+      border-color: var(--dos-red);
+      color: var(--dos-red);
+    }
+    .info-modal-body {
+      padding: 14px 18px;
+      font-family: var(--font-main);
+      font-size: 0.9rem;
+      color: var(--dos-green);
+      line-height: 1.8;
+    }
+    .info-modal-body strong { color: var(--dos-amber); }
+    .info-modal-body em { color: var(--dos-cyan); font-style: normal; }
+    .info-modal-body .line { margin-bottom: 8px; opacity: 0; transition: opacity 0.15s; }
+    .info-modal-body .line.show { opacity: 1; }
+  </style>
+</head>
+<body>
+
+
+<!-- Video Background -->
+<div class="video-bg-container">
+  <video class="video-bg" autoplay muted loop playsinline>
+    <source src="startseite.mp4" type="video/mp4">
+  </video>
+</div>
+
+<!-- DOS Menu Bar -->
+<div class="dos-menubar">
+  <span>≡ SYSTEM</span>
+  <span onclick="showSection('blog')" data-i18n="nav_home">Startseite</span>
+  <span onclick="showSection('blog')" style="background:#000;color:#33ff33;" data-i18n="nav_blog">Blog</span>
+  <span onclick="showSection('projects')" data-i18n="nav_projects">Projekte</span>
+  <span onclick="location.href='#kontakt'" data-i18n="nav_contact">Kontakt</span>
+  <span id="lang-toggle" style="margin-left:auto" onclick="toggleLang()" title="Sprache / Language">[ DE ▸ EN ]</span>
+</div>
+
+<!-- Header -->
+<div class="header">
+<pre class="header-ascii">
+ ╔══════════════════════════════════════════════════════════════╗
+ ║  ██╗   ██╗██╗██████╗ ███████╗  ██╗     ██╗███╗   ██╗██╗  ██╗║
+ ║  ██║   ██║██║██╔══██╗██╔════╝  ██║     ██║████╗  ██║██║ ██╔╝║
+ ║  ██║   ██║██║██████╔╝█████╗    ██║     ██║██╔██╗ ██║█████╔╝ ║
+ ║  ╚██╗ ██╔╝██║██╔══██╗██╔══╝    ██║     ██║██║╚██╗██║██╔═██╗ ║
+ ║   ╚████╔╝ ██║██████╔╝███████╗  ███████╗██║██║ ╚████║██║  ██╗║
+ ║    ╚═══╝  ╚═╝╚═════╝ ╚══════╝  ╚══════╝╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝║
+ ╠══════════════════════════════════════════════════════════════╣
+ ║  DEV://BLOG  —  KI-Entwicklung · Automatisierung · Agents  ║
+ ╚══════════════════════════════════════════════════════════════╝
+</pre>
+  <div class="header-sub">SYSTEM READY — LOADING BLOG ENTRIES...</div>
+  <div class="header-status">C:\BLOG> dir *.md <span class="blink">█</span></div>
+</div>
+
+<!-- Stats -->
+<div class="stats-bar" id="stats-bar">
+  <span class="stat"><span data-i18n="posts">POSTS:</span> <b id="post-count">-</b></span>
+  <span class="stat"><span data-i18n="last">LETZTER:</span> <b id="last-date">-</b></span>
+  <span class="stat"><span data-i18n="tags">TAGS:</span> <b id="tag-count">-</b></span>
+  <span class="stat"><span data-i18n="status">STATUS:</span> <b id="status-val" style="color:#33ff33">● ONLINE</b></span>
+</div>
+
+<!-- Info Buttons -->
+<div class="info-bar">
+  <button class="info-btn" onclick="showInfo('about')">? Was ist das hier</button>
+  <button class="info-btn" onclick="showInfo('brain')">? Second Brain</button>
+  <button class="info-btn" onclick="showInfo('autistic')">? Autistic Brain</button>
+  <button class="info-btn" onclick="showInfo('tech')">? Wie funktioniert das</button>
+</div>
+
+<button class="info-fab" id="info-fab" onclick="showInfoPanel()">? INFO</button>
+<!-- Info Modal -->
+<div class="info-overlay" id="info-overlay" onclick="closeInfo(event)">
+  <div class="info-modal" onclick="event.stopPropagation()">
+    <div class="info-modal-header">
+      <span id="info-title">INFO</span>
+      <button class="info-close" onclick="closeInfo()">[X] SCHLIESSEN</button>
+    </div>
+    <div class="info-modal-body" id="info-body"></div>
+  </div>
+</div>
+
+<!-- Blog Posts Container -->
+<div class="container" id="posts-container">
+  <div class="loading" id="loading" data-i18n="loading">LADE EINTRÄGE</div>
+</div>
+
+
+<!-- Projects Section -->
+<div class="projects-section" id="projects-section">
+  <div class="projects-header">C:\\PROJEKTE> dir /w</div>
+  <div id="projects-list"></div>
+
+  <div class="pagination" id="pagination" style="display:none"></div>
+</div>
+
+<!-- Footer -->
+<div class="container">
+  <div class="footer">
+    ═══ EOF ═══<br>
+    VIBE.LINK v1.0 · vibe.link · Powered by Hermes Zentrale + n8n<br>
+    © 2026 Vibe.Link · <span data-i18n="rights">Alle Rechte vorbehalten</span>
+  </div>
+</div>
+
+<!-- Ghost Typist Strip -->
+<div class="ghost-strip">
+  <span class="ghost-prefix">▸ _</span>
+  <div class="ghost-type" id="ghost-target"></div>
+</div>
+
+<!-- Live Ticker -->
+<div class="ticker-bar">
+  <span class="ticker-text" id="ticker">
+    ▸ SYSTEM AKTIV ▸ Blog-Agent läuft 3×/Tag ▸ Credentials via Hermes Zentrale (AES-256) ▸ n8n Workflows: 5 aktiv ▸ Second Brain: 18 Dateien, 7 Ordner ▸ Last Build: 2026-06-16 ▸
+  </span>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+// BLOG ENGINE — Parses Markdown blog posts, renders as DOS UI
+// ═══════════════════════════════════════════════════════════
+
+// Blog post data — generated from MD files
+const BLOG_POSTS = [
+  {
+    "filename": "2026-07-13-blog-repariert-und-automatisiert.md",
+    "date": "2026-07-13",
+    "tags": [
+      "automatisierung",
+      "blog",
+      "deployment",
+      "ssh",
+      "self-hosting"
+    ],
+    "de": {
+      "title": "Warum zwei Blog-Posts wochenlang unsichtbar waren — und wie ich es für immer gelöst habe",
+      "description": "Zwei fertige Blog-Posts landeten wochenlang nicht auf meiner Website. Die Ursache war eine versteckte Fehlerkette — und die Lösung ein kleines Skript, das den Blog jetzt ganz allein aktuell hält.",
+      "tags": [
+        "automatisierung",
+        "blog",
+        "deployment",
+        "ssh",
+        "self-hosting"
+      ],
+      "content": "<p>Stell dir vor, du schreibst zwei Texte, drückst auf „Fertig\" — und wochenlang sieht sie niemand. Genau das ist mir passiert. Zwei Blog-Posts vom 6. Juli waren sauber geschrieben, gespeichert, alles schien in Ordnung. Nur: Auf meiner Website ganster.tech tauchten sie einfach nicht auf. Heute habe ich herausgefunden warum — und dafür gesorgt, dass das nie wieder passiert.</p>\n<h2>Das Problem: ein Post, der nirgends ankommt</h2>\n<p>Ein Blog-Post ist wie ein Brief. Schreiben allein reicht nicht — jemand muss ihn auch in den Briefkasten werfen. Bei mir wurde der Brief geschrieben, aber nie eingeworfen. Und das gleich aus zwei Gründen, die sich gegenseitig versteckt haben.</p>\n<p>Der erste Grund: Ich hatte einen automatischen Ablauf über ein Werkzeug namens n8n (ein Baukasten, mit dem man Aufgaben aneinanderkettet, ohne selbst zu programmieren). Dieser Ablauf hat den Blog fertig zusammengebaut — aber den letzten Schritt, das Hochladen auf den Server, gab es überhaupt nicht. Der fertige Brief blieb also auf dem Schreibtisch liegen.</p>\n<p>Der zweite Grund: Meine Posts bekommen inzwischen keinen sogenannten Frontmatter mehr. Frontmatter ist ein kleiner Info-Kopf am Anfang jeder Datei (Titel, Datum, Schlagwörter) — quasi der Adressaufkleber auf dem Brief. Mein altes Bau-Programm konnte Briefe ohne diesen Aufkleber nicht lesen und hat sie stillschweigend ignoriert.</p>\n<p>Zwei Fehler, die zusammen dafür sorgten, dass alles „irgendwie lief\" und trotzdem nichts ankam. Solche versteckten Ketten sind die nervigsten — nichts blinkt rot, es passiert einfach nichts.</p>\n<h2>Die Lösung: ein eigenes kleines Zustell-Skript</h2>\n<p>Statt den alten, undurchschaubaren Ablauf zu flicken, habe ich ihn durch etwas Einfaches und Nachprüfbares ersetzt: ein kleines Programm namens <code>deploy_blog.py</code> (ein Skript = eine Liste von Anweisungen, die der Computer der Reihe nach abarbeitet).</p>\n<p>Das Skript macht drei Dinge, jedes Mal aufs Neue:</p>\n<p>Es holt sich zuerst die aktuelle Blog-Seite direkt vom Server. Dann baut es die Liste aller Posts komplett neu zusammen — und zwar so, dass es beide Sorten versteht: die mit Adressaufkleber und die ohne. Zum Schluss lädt es die fertige Seite wieder hoch, über eine sichere Verbindung namens SFTP (eine verschlüsselte Art, Dateien auf einen Server zu kopieren).</p>\n<p>Damit dieser Upload ohne gespeichertes Passwort funktioniert, habe ich einen SSH-Schlüssel eingerichtet (ein SSH-Schlüssel ist wie ein digitaler Haustürschlüssel — der Server erkennt daran, dass wirklich ich es bin, ganz ohne Passwort). Den habe ich bei meinem Hosting-Anbieter hinterlegt und die Verbindung einmal erfolgreich getestet.</p>\n<h2>Sicherheitsnetze, damit nichts kaputtgeht</h2>\n<p>Ein Programm, das automatisch meine Website überschreibt, macht mir ehrlich gesagt ein bisschen Angst. Was, wenn irgendwas schiefläuft und plötzlich der ganze Blog leer ist?</p>\n<p>Deshalb hat das Skript zwei eingebaute Notbremsen. Wenn das Herunterladen der aktuellen Seite scheitert, bricht es sofort ab — ohne irgendwas hochzuladen. Und wenn beim Zusammenbauen null Posts herauskämen, stoppt es ebenfalls. Kurz gesagt: Lieber gar nichts tun als etwas kaputtmachen. Zusätzlich liegt die alte Version noch als Sicherungskopie auf dem Server. Ein Netz, und darunter noch ein zweites.</p>\n<h2>Was jetzt von allein passiert</h2>\n<p>Das Beste: Ich muss nichts mehr anfassen. Ein automatischer Aufräum-Lauf startet das Zustell-Skript viermal am Tag. Der Ablauf ist jetzt wie ein Dominostein-Pfad — ich schreibe abends einen Post, und beim nächsten Lauf schiebt sich alles von selbst live. Kein Knopfdruck, kein n8n-Umweg, keine verschollenen Briefe mehr.</p>\n<p>Und zur Kontrolle habe ich direkt am Server nachgeschaut: fünf Posts online, beide Juli-Texte endlich dabei. Bestätigt. ✅</p>\n<h2>Wie es weitergeht</h2>\n<p>Als Nächstes will ich die Vorlesefunktion des Blogs aufhübschen. Bisher liest eine etwas roboterhafte Standard-Stimme vor. Ich möchte auf eine natürlich klingende Stimme umsteigen — und zwar clever: Die Audiodatei wird pro Post nur ein einziges Mal erzeugt und gespeichert, statt bei jedem Besucher neu berechnet zu werden. Das hält die Kosten bei praktisch null und die Wiedergabe blitzschnell.</p>\n<p>Am Ende geht es mir immer um dasselbe Prinzip: einmal richtig bauen, dann für immer von allein laufen lassen. Ein Fehler, den ich nie wieder von Hand suchen muss, ist ein guter Tag Arbeit.</p>"
+    },
+    "en": {
+      "title": "Warum zwei Blog-Posts wochenlang unsichtbar waren — und wie ich es für immer gelöst habe",
+      "description": "Zwei fertige Blog-Posts landeten wochenlang nicht auf meiner Website. Die Ursache war eine versteckte Fehlerkette — und die Lösung ein kleines Skript, das den Blog jetzt ganz allein aktuell hält.",
+      "tags": [
+        "automatisierung",
+        "blog",
+        "deployment",
+        "ssh",
+        "self-hosting"
+      ],
+      "content": "<p>Stell dir vor, du schreibst zwei Texte, drückst auf „Fertig\" — und wochenlang sieht sie niemand. Genau das ist mir passiert. Zwei Blog-Posts vom 6. Juli waren sauber geschrieben, gespeichert, alles schien in Ordnung. Nur: Auf meiner Website ganster.tech tauchten sie einfach nicht auf. Heute habe ich herausgefunden warum — und dafür gesorgt, dass das nie wieder passiert.</p>\n<h2>Das Problem: ein Post, der nirgends ankommt</h2>\n<p>Ein Blog-Post ist wie ein Brief. Schreiben allein reicht nicht — jemand muss ihn auch in den Briefkasten werfen. Bei mir wurde der Brief geschrieben, aber nie eingeworfen. Und das gleich aus zwei Gründen, die sich gegenseitig versteckt haben.</p>\n<p>Der erste Grund: Ich hatte einen automatischen Ablauf über ein Werkzeug namens n8n (ein Baukasten, mit dem man Aufgaben aneinanderkettet, ohne selbst zu programmieren). Dieser Ablauf hat den Blog fertig zusammengebaut — aber den letzten Schritt, das Hochladen auf den Server, gab es überhaupt nicht. Der fertige Brief blieb also auf dem Schreibtisch liegen.</p>\n<p>Der zweite Grund: Meine Posts bekommen inzwischen keinen sogenannten Frontmatter mehr. Frontmatter ist ein kleiner Info-Kopf am Anfang jeder Datei (Titel, Datum, Schlagwörter) — quasi der Adressaufkleber auf dem Brief. Mein altes Bau-Programm konnte Briefe ohne diesen Aufkleber nicht lesen und hat sie stillschweigend ignoriert.</p>\n<p>Zwei Fehler, die zusammen dafür sorgten, dass alles „irgendwie lief\" und trotzdem nichts ankam. Solche versteckten Ketten sind die nervigsten — nichts blinkt rot, es passiert einfach nichts.</p>\n<h2>Die Lösung: ein eigenes kleines Zustell-Skript</h2>\n<p>Statt den alten, undurchschaubaren Ablauf zu flicken, habe ich ihn durch etwas Einfaches und Nachprüfbares ersetzt: ein kleines Programm namens <code>deploy_blog.py</code> (ein Skript = eine Liste von Anweisungen, die der Computer der Reihe nach abarbeitet).</p>\n<p>Das Skript macht drei Dinge, jedes Mal aufs Neue:</p>\n<p>Es holt sich zuerst die aktuelle Blog-Seite direkt vom Server. Dann baut es die Liste aller Posts komplett neu zusammen — und zwar so, dass es beide Sorten versteht: die mit Adressaufkleber und die ohne. Zum Schluss lädt es die fertige Seite wieder hoch, über eine sichere Verbindung namens SFTP (eine verschlüsselte Art, Dateien auf einen Server zu kopieren).</p>\n<p>Damit dieser Upload ohne gespeichertes Passwort funktioniert, habe ich einen SSH-Schlüssel eingerichtet (ein SSH-Schlüssel ist wie ein digitaler Haustürschlüssel — der Server erkennt daran, dass wirklich ich es bin, ganz ohne Passwort). Den habe ich bei meinem Hosting-Anbieter hinterlegt und die Verbindung einmal erfolgreich getestet.</p>\n<h2>Sicherheitsnetze, damit nichts kaputtgeht</h2>\n<p>Ein Programm, das automatisch meine Website überschreibt, macht mir ehrlich gesagt ein bisschen Angst. Was, wenn irgendwas schiefläuft und plötzlich der ganze Blog leer ist?</p>\n<p>Deshalb hat das Skript zwei eingebaute Notbremsen. Wenn das Herunterladen der aktuellen Seite scheitert, bricht es sofort ab — ohne irgendwas hochzuladen. Und wenn beim Zusammenbauen null Posts herauskämen, stoppt es ebenfalls. Kurz gesagt: Lieber gar nichts tun als etwas kaputtmachen. Zusätzlich liegt die alte Version noch als Sicherungskopie auf dem Server. Ein Netz, und darunter noch ein zweites.</p>\n<h2>Was jetzt von allein passiert</h2>\n<p>Das Beste: Ich muss nichts mehr anfassen. Ein automatischer Aufräum-Lauf startet das Zustell-Skript viermal am Tag. Der Ablauf ist jetzt wie ein Dominostein-Pfad — ich schreibe abends einen Post, und beim nächsten Lauf schiebt sich alles von selbst live. Kein Knopfdruck, kein n8n-Umweg, keine verschollenen Briefe mehr.</p>\n<p>Und zur Kontrolle habe ich direkt am Server nachgeschaut: fünf Posts online, beide Juli-Texte endlich dabei. Bestätigt. ✅</p>\n<h2>Wie es weitergeht</h2>\n<p>Als Nächstes will ich die Vorlesefunktion des Blogs aufhübschen. Bisher liest eine etwas roboterhafte Standard-Stimme vor. Ich möchte auf eine natürlich klingende Stimme umsteigen — und zwar clever: Die Audiodatei wird pro Post nur ein einziges Mal erzeugt und gespeichert, statt bei jedem Besucher neu berechnet zu werden. Das hält die Kosten bei praktisch null und die Wiedergabe blitzschnell.</p>\n<p>Am Ende geht es mir immer um dasselbe Prinzip: einmal richtig bauen, dann für immer von allein laufen lassen. Ein Fehler, den ich nie wieder von Hand suchen muss, ist ein guter Tag Arbeit.</p>"
+    }
+  },
+  {
+    "filename": "2026-07-06-homepage-relaunch-vom-terminal-zum-kinoerlebnis.md",
+    "date": "2026-07-06",
+    "tags": [
+      "homepage",
+      "relaunch",
+      "webdesign",
+      "ui",
+      "video"
+    ],
+    "de": {
+      "title": "Mein Homepage-Relaunch: Vom Terminal-Look zum Fullscreen-Kinoerlebnis",
+      "description": "Kennst du das Gefuehl, wenn du deine eigene Website oeffnest und denkst: \"Das geht besser\"? So ging es mir letzte Woche. Meine Seite sah aus wie ein Hacker-Terminal aus den Neunzigern. Gruene Schrift auf schwarzem Grund, blinkende Cursor...",
+      "tags": [
+        "homepage",
+        "relaunch",
+        "webdesign",
+        "ui",
+        "video"
+      ],
+      "content": "<p>Kennst du das Gefuehl, wenn du deine eigene Website oeffnest und denkst: \"Das geht besser\"? So ging es mir letzte Woche. Meine Seite sah aus wie ein Hacker-Terminal aus den Neunzigern. Gruene Schrift auf schwarzem Grund, blinkende Cursor, DOS-Befehle als Navigation. Cool? Ja. Aber auch ein bisschen... viel fuer Erstbesucher.</p>\n<h2>Das Problem mit dem Nerd-Faktor</h2>\n<p>Ich liebe den Matrix-DOS-Style. Ernsthaft. Die gruene Schrift, die Scanlines, das Gefuehl als wuerdest du dich gerade irgendwo reinhacken. Aber mir wurde klar: Nicht jeder, der auf meine Seite kommt, ist ein Tech-Nerd. Manche wollen einfach nur wissen, was ich so mache. Und die wurden von einer Wand aus Terminal-Aesthetik erschlagen.</p>\n<h2>Die Loesung: Zwei Ebenen</h2>\n<p>Also habe ich die Seite in zwei Ebenen aufgeteilt. Ebene eins ist die neue Startseite — ein Fullscreen-Video als Hintergrund, mein Logo in der Mitte, und vier klare Buttons: KI, Kunst, Gaming, Homepage. Darunter meine Social-Media-Icons. Kein Terminal, kein DOS, kein blinkender Cursor. Einfach nur: Willkommen, das bin ich, das mache ich.</p>\n<p>Wer dann auf \"Homepage\" klickt, landet in der zweiten Ebene — dem Blog. Und da ist der Matrix-Style immer noch da, in voller Pracht. Gruene Schrift, Scanlines, der ganze Spass. Aber jetzt ist es eine bewusste Entscheidung. Du gehst rein, weil du es willst. Nicht weil es dir aufgezwungen wird.</p>\n<h2>Das Video-Problem</h2>\n<p>Klingt einfach, war es nicht. Das Hintergrundvideo sah auf dem Handy perfekt aus — Hochformat, fuellt den ganzen Bildschirm. Aber auf dem Desktop? Komplett reingezoomt, man sah nur noch einen kleinen Ausschnitt. Das liegt daran, wie Browser Videos skalieren. Die Standardeinstellung heisst \"cover\" — das Video wird so gross gemacht, dass es den ganzen Bildschirm bedeckt, und alles was nicht passt wird abgeschnitten.</p>\n<p>Die Loesung war eine Media-Query: Auf breiten Bildschirmen zeige ich das Video im \"contain\"-Modus — das ganze Video ist sichtbar, auch wenn oben und unten schwarze Balken entstehen. Auf Handys bleibt es bei \"cover\", weil das Hochformat-Video dort sowieso perfekt passt.</p>\n<h2>Die Projekte-Sektion</h2>\n<p>Der Blog allein war mir nicht genug. Ich wollte zeigen, woran ich gerade arbeite. Also habe ich eine Projekte-Sektion eingebaut. Sechs Karten, jede mit Status-Badge: Aktiv, Beta oder Geplant.</p>\n<p>Da steht jetzt der VIBE.LINK Blog, die Bauplan-App, mein Second Brain System, die geplante Kunst-Galerie, Hermes Zentrale und der Social Media Autopilot. Alles auf einen Blick, ohne dass du dich durch fuenf Untermenues klicken musst.</p>\n<h2>Das Info-System</h2>\n<p>Noch ein Feature, auf das ich stolz bin: das Info-System. Wenn du zum ersten Mal auf die Blog-Seite kommst, oeffnet sich automatisch ein erklaerrender Text mit Sprachausgabe. Da steht drin, wer ich bin, was die Seite macht, und warum alles aussieht wie ein Hacker-Film. Beim zweiten Besuch ist das weg — stattdessen gibt es einen kleinen schwebenden Button am Rand, falls du es nochmal lesen willst.</p>\n<p>Das Ganze wird ueber einen simplen Mechanismus gesteuert: Dein Browser merkt sich, ob du die Info schon gesehen hast. Erster Besuch: grosses Willkommen. Danach: dezenter Button. Nicht aufdringlich, aber immer da wenn du es brauchst.</p>\n<h2>Was kommt als naechstes?</h2>\n<p>Die Startseite steht. Der Blog laeuft. Die Projekte sind sichtbar. Aber es fehlt noch was: Die KI-Sektion und die Kunst-Galerie. Zwei der vier Buttons auf der Startseite fuehren noch ins Nichts. Das aendert sich bald. Die Kunst-Galerie soll sich automatisch aus meinem Google Drive fuellen — Epoxidharz-Arbeiten, anatomische Zeichnungen, alles was ich so produziere. Und die KI-Sektion? Da wirds richtig spannend. Aber das ist eine Geschichte fuer einen anderen Post.</p>\n<p>---</p>\n<p><em>Manchmal muss man einen Schritt zurueck machen, um zwei nach vorne zu gehen. Die Seite fuehlt sich jetzt an wie... ich. Und das ist genau der Punkt.</em></p>"
+    },
+    "en": {
+      "title": "Mein Homepage-Relaunch: Vom Terminal-Look zum Fullscreen-Kinoerlebnis",
+      "description": "Kennst du das Gefuehl, wenn du deine eigene Website oeffnest und denkst: \"Das geht besser\"? So ging es mir letzte Woche. Meine Seite sah aus wie ein Hacker-Terminal aus den Neunzigern. Gruene Schrift auf schwarzem Grund, blinkende Cursor...",
+      "tags": [
+        "homepage",
+        "relaunch",
+        "webdesign",
+        "ui",
+        "video"
+      ],
+      "content": "<p>Kennst du das Gefuehl, wenn du deine eigene Website oeffnest und denkst: \"Das geht besser\"? So ging es mir letzte Woche. Meine Seite sah aus wie ein Hacker-Terminal aus den Neunzigern. Gruene Schrift auf schwarzem Grund, blinkende Cursor, DOS-Befehle als Navigation. Cool? Ja. Aber auch ein bisschen... viel fuer Erstbesucher.</p>\n<h2>Das Problem mit dem Nerd-Faktor</h2>\n<p>Ich liebe den Matrix-DOS-Style. Ernsthaft. Die gruene Schrift, die Scanlines, das Gefuehl als wuerdest du dich gerade irgendwo reinhacken. Aber mir wurde klar: Nicht jeder, der auf meine Seite kommt, ist ein Tech-Nerd. Manche wollen einfach nur wissen, was ich so mache. Und die wurden von einer Wand aus Terminal-Aesthetik erschlagen.</p>\n<h2>Die Loesung: Zwei Ebenen</h2>\n<p>Also habe ich die Seite in zwei Ebenen aufgeteilt. Ebene eins ist die neue Startseite — ein Fullscreen-Video als Hintergrund, mein Logo in der Mitte, und vier klare Buttons: KI, Kunst, Gaming, Homepage. Darunter meine Social-Media-Icons. Kein Terminal, kein DOS, kein blinkender Cursor. Einfach nur: Willkommen, das bin ich, das mache ich.</p>\n<p>Wer dann auf \"Homepage\" klickt, landet in der zweiten Ebene — dem Blog. Und da ist der Matrix-Style immer noch da, in voller Pracht. Gruene Schrift, Scanlines, der ganze Spass. Aber jetzt ist es eine bewusste Entscheidung. Du gehst rein, weil du es willst. Nicht weil es dir aufgezwungen wird.</p>\n<h2>Das Video-Problem</h2>\n<p>Klingt einfach, war es nicht. Das Hintergrundvideo sah auf dem Handy perfekt aus — Hochformat, fuellt den ganzen Bildschirm. Aber auf dem Desktop? Komplett reingezoomt, man sah nur noch einen kleinen Ausschnitt. Das liegt daran, wie Browser Videos skalieren. Die Standardeinstellung heisst \"cover\" — das Video wird so gross gemacht, dass es den ganzen Bildschirm bedeckt, und alles was nicht passt wird abgeschnitten.</p>\n<p>Die Loesung war eine Media-Query: Auf breiten Bildschirmen zeige ich das Video im \"contain\"-Modus — das ganze Video ist sichtbar, auch wenn oben und unten schwarze Balken entstehen. Auf Handys bleibt es bei \"cover\", weil das Hochformat-Video dort sowieso perfekt passt.</p>\n<h2>Die Projekte-Sektion</h2>\n<p>Der Blog allein war mir nicht genug. Ich wollte zeigen, woran ich gerade arbeite. Also habe ich eine Projekte-Sektion eingebaut. Sechs Karten, jede mit Status-Badge: Aktiv, Beta oder Geplant.</p>\n<p>Da steht jetzt der VIBE.LINK Blog, die Bauplan-App, mein Second Brain System, die geplante Kunst-Galerie, Hermes Zentrale und der Social Media Autopilot. Alles auf einen Blick, ohne dass du dich durch fuenf Untermenues klicken musst.</p>\n<h2>Das Info-System</h2>\n<p>Noch ein Feature, auf das ich stolz bin: das Info-System. Wenn du zum ersten Mal auf die Blog-Seite kommst, oeffnet sich automatisch ein erklaerrender Text mit Sprachausgabe. Da steht drin, wer ich bin, was die Seite macht, und warum alles aussieht wie ein Hacker-Film. Beim zweiten Besuch ist das weg — stattdessen gibt es einen kleinen schwebenden Button am Rand, falls du es nochmal lesen willst.</p>\n<p>Das Ganze wird ueber einen simplen Mechanismus gesteuert: Dein Browser merkt sich, ob du die Info schon gesehen hast. Erster Besuch: grosses Willkommen. Danach: dezenter Button. Nicht aufdringlich, aber immer da wenn du es brauchst.</p>\n<h2>Was kommt als naechstes?</h2>\n<p>Die Startseite steht. Der Blog laeuft. Die Projekte sind sichtbar. Aber es fehlt noch was: Die KI-Sektion und die Kunst-Galerie. Zwei der vier Buttons auf der Startseite fuehren noch ins Nichts. Das aendert sich bald. Die Kunst-Galerie soll sich automatisch aus meinem Google Drive fuellen — Epoxidharz-Arbeiten, anatomische Zeichnungen, alles was ich so produziere. Und die KI-Sektion? Da wirds richtig spannend. Aber das ist eine Geschichte fuer einen anderen Post.</p>\n<p>---</p>\n<p><em>Manchmal muss man einen Schritt zurueck machen, um zwei nach vorne zu gehen. Die Seite fuehlt sich jetzt an wie... ich. Und das ist genau der Punkt.</em></p>"
+    }
+  },
+  {
+    "filename": "2026-07-06-warum-meine-app-drei-ki-gehirne-hat.md",
+    "date": "2026-07-06",
+    "tags": [
+      "bauplan-app",
+      "ki",
+      "api-kosten",
+      "byok",
+      "architektur"
+    ],
+    "de": {
+      "title": "Warum meine Bauplan-App jetzt drei KI-Gehirne hat — und keins davon meins ist",
+      "description": "Es ist drei Uhr nachts und ich starre auf meinen Bildschirm. Vor mir liegt ein Problem, das mich seit Wochen beschaeftigt: Ich baue eine App, die aus Fotos und Beschreibungen automatisch 3D-Grundrisse generiert. Das Ding funktioniert. Ri...",
+      "tags": [
+        "bauplan-app",
+        "ki",
+        "api-kosten",
+        "byok",
+        "architektur"
+      ],
+      "content": "<p>Es ist drei Uhr nachts und ich starre auf meinen Bildschirm. Vor mir liegt ein Problem, das mich seit Wochen beschaeftigt: Ich baue eine App, die aus Fotos und Beschreibungen automatisch 3D-Grundrisse generiert. Das Ding funktioniert. Richtig gut sogar. Aber es gibt einen Haken.</p>\n<p>Jedes Mal, wenn ein Nutzer auf \"Analysieren\" klickt, zahle ich. Jeder API-Call geht auf meine Rechnung. Und wenn die App mal wirklich Nutzer hat — sagen wir ein paar hundert Architekten, die taeglich Grundrisse durchjagen — dann wird das richtig teuer. Fuer mich. Nicht fuer sie.</p>\n<h2>Das Problem mit dem klassischen Modell</h2>\n<p>Die meisten KI-Apps funktionieren so: Du zahlst ein Abo, der Entwickler zahlt die KI-Kosten und hofft, dass die Marge stimmt. Das ist wie ein Restaurant, das Flatrate-Essen anbietet und betet, dass niemand zu hungrig kommt.</p>\n<p>Ich wollte das anders loesen. Radikal anders.</p>\n<h2>Die Idee: Bring dein eigenes Gehirn mit</h2>\n<p>Was waere, wenn die Nutzer ihren eigenen KI-Zugang mitbringen? Nicht weil ich geizig bin, sondern weil es fuer alle besser ist. Der Architekt kann sich aussuchen, welche KI er bevorzugt. Manche schwoeren auf Claude, andere auf Gemini, wieder andere auf OpenAI. Und jeder zahlt nur das, was er tatsaechlich verbraucht.</p>\n<p>Ich verkaufe die Software. Die Intelligenz bringt der Kunde selbst mit.</p>\n<h2>Drei Provider, ein System</h2>\n<p>Also habe ich das System komplett umgebaut. Die App unterstuetzt jetzt drei KI-Anbieter gleichzeitig: Claude von Anthropic, Gemini von Google und GPT von OpenAI. Der Nutzer waehlt seinen Favoriten, gibt seinen API-Key ein, und los gehts.</p>\n<p>Das klingt einfacher als es ist. Jeder Anbieter hat seine eigene Art, wie er Bilder verarbeitet, wie er Anfragen entgegennimmt, welche Modelle verfuegbar sind. Unter der Haube musste ich einen einheitlichen Adapter bauen, der alle drei Welten zusammenbringt. Eine Funktion, die egal welchen Provider du waehlst, immer das gleiche Ergebnis liefert: einen praezisen 3D-Grundriss nach DIN-Normen.</p>\n<h2>Was VIBELINK daraus macht</h2>\n<p>Das Herzstück ist das VIBELINK-System. Ein speziell entwickelter Algorithmus, der dem jeweiligen KI-Modell ganz genau erklaert, wie ein Grundriss nach deutschen Baunormen aussehen muss. Wandstaerken, Geschosshoehen, Rastermaße — alles nach DIN 4172. Egal ob du ein Foto von einem Haus hochlaedst, eine Textbeschreibung eintippst oder einen echten Bauplan scannst: VIBELINK erkennt automatisch, was du ihm gibst, und waehlt die passende Analysemethode.</p>\n<p>Das Ergebnis? Ein vollstaendiges 3D-Modell mit Waenden, Dach, Erkern und Gauben. Direkt in der App. Kein Export noetig, kein Umweg ueber andere Software.</p>\n<h2>Der Verbindungstest</h2>\n<p>Besonders stolz bin ich auf ein kleines Detail: den Verbindungstest. Bevor du loslegst, kannst du mit einem Klick pruefen, ob dein API-Key funktioniert. Die App schickt eine Mini-Anfrage an den gewaehlten Anbieter und sagt dir sofort, ob alles laeuft. Kein Raetselraten, kein \"warum geht das nicht\".</p>\n<h2>Was das fuer Architekten bedeutet</h2>\n<p>Stell dir vor: Du bist Architekt, bekommst ein Foto von einem Bestandsgebaeude und sollst schnell einschaetzen, wie der Grundriss aussehen koennte. Statt stundenlang zu zeichnen, wirfst du das Foto in die App und hast in Sekunden ein 3D-Modell. Mit deinem eigenen KI-Zugang, ohne Abo-Falle, ohne versteckte Kosten.</p>\n<p>Das ist die Zukunft, an der ich baue. Und der naechste Schritt? Der wird noch spannender. Denn das VIBELINK-System kann mehr als nur analysieren — es kann auch korrigieren. Aber dazu mehr im naechsten Post.</p>\n<p>---</p>\n<p><em>Geschrieben um 03:47 Uhr. Kaffee Nummer vier. Die App laeuft. Die drei Gehirne denken. Und ich geh endlich schlafen.</em></p>"
+    },
+    "en": {
+      "title": "Warum meine Bauplan-App jetzt drei KI-Gehirne hat — und keins davon meins ist",
+      "description": "Es ist drei Uhr nachts und ich starre auf meinen Bildschirm. Vor mir liegt ein Problem, das mich seit Wochen beschaeftigt: Ich baue eine App, die aus Fotos und Beschreibungen automatisch 3D-Grundrisse generiert. Das Ding funktioniert. Ri...",
+      "tags": [
+        "bauplan-app",
+        "ki",
+        "api-kosten",
+        "byok",
+        "architektur"
+      ],
+      "content": "<p>Es ist drei Uhr nachts und ich starre auf meinen Bildschirm. Vor mir liegt ein Problem, das mich seit Wochen beschaeftigt: Ich baue eine App, die aus Fotos und Beschreibungen automatisch 3D-Grundrisse generiert. Das Ding funktioniert. Richtig gut sogar. Aber es gibt einen Haken.</p>\n<p>Jedes Mal, wenn ein Nutzer auf \"Analysieren\" klickt, zahle ich. Jeder API-Call geht auf meine Rechnung. Und wenn die App mal wirklich Nutzer hat — sagen wir ein paar hundert Architekten, die taeglich Grundrisse durchjagen — dann wird das richtig teuer. Fuer mich. Nicht fuer sie.</p>\n<h2>Das Problem mit dem klassischen Modell</h2>\n<p>Die meisten KI-Apps funktionieren so: Du zahlst ein Abo, der Entwickler zahlt die KI-Kosten und hofft, dass die Marge stimmt. Das ist wie ein Restaurant, das Flatrate-Essen anbietet und betet, dass niemand zu hungrig kommt.</p>\n<p>Ich wollte das anders loesen. Radikal anders.</p>\n<h2>Die Idee: Bring dein eigenes Gehirn mit</h2>\n<p>Was waere, wenn die Nutzer ihren eigenen KI-Zugang mitbringen? Nicht weil ich geizig bin, sondern weil es fuer alle besser ist. Der Architekt kann sich aussuchen, welche KI er bevorzugt. Manche schwoeren auf Claude, andere auf Gemini, wieder andere auf OpenAI. Und jeder zahlt nur das, was er tatsaechlich verbraucht.</p>\n<p>Ich verkaufe die Software. Die Intelligenz bringt der Kunde selbst mit.</p>\n<h2>Drei Provider, ein System</h2>\n<p>Also habe ich das System komplett umgebaut. Die App unterstuetzt jetzt drei KI-Anbieter gleichzeitig: Claude von Anthropic, Gemini von Google und GPT von OpenAI. Der Nutzer waehlt seinen Favoriten, gibt seinen API-Key ein, und los gehts.</p>\n<p>Das klingt einfacher als es ist. Jeder Anbieter hat seine eigene Art, wie er Bilder verarbeitet, wie er Anfragen entgegennimmt, welche Modelle verfuegbar sind. Unter der Haube musste ich einen einheitlichen Adapter bauen, der alle drei Welten zusammenbringt. Eine Funktion, die egal welchen Provider du waehlst, immer das gleiche Ergebnis liefert: einen praezisen 3D-Grundriss nach DIN-Normen.</p>\n<h2>Was VIBELINK daraus macht</h2>\n<p>Das Herzstück ist das VIBELINK-System. Ein speziell entwickelter Algorithmus, der dem jeweiligen KI-Modell ganz genau erklaert, wie ein Grundriss nach deutschen Baunormen aussehen muss. Wandstaerken, Geschosshoehen, Rastermaße — alles nach DIN 4172. Egal ob du ein Foto von einem Haus hochlaedst, eine Textbeschreibung eintippst oder einen echten Bauplan scannst: VIBELINK erkennt automatisch, was du ihm gibst, und waehlt die passende Analysemethode.</p>\n<p>Das Ergebnis? Ein vollstaendiges 3D-Modell mit Waenden, Dach, Erkern und Gauben. Direkt in der App. Kein Export noetig, kein Umweg ueber andere Software.</p>\n<h2>Der Verbindungstest</h2>\n<p>Besonders stolz bin ich auf ein kleines Detail: den Verbindungstest. Bevor du loslegst, kannst du mit einem Klick pruefen, ob dein API-Key funktioniert. Die App schickt eine Mini-Anfrage an den gewaehlten Anbieter und sagt dir sofort, ob alles laeuft. Kein Raetselraten, kein \"warum geht das nicht\".</p>\n<h2>Was das fuer Architekten bedeutet</h2>\n<p>Stell dir vor: Du bist Architekt, bekommst ein Foto von einem Bestandsgebaeude und sollst schnell einschaetzen, wie der Grundriss aussehen koennte. Statt stundenlang zu zeichnen, wirfst du das Foto in die App und hast in Sekunden ein 3D-Modell. Mit deinem eigenen KI-Zugang, ohne Abo-Falle, ohne versteckte Kosten.</p>\n<p>Das ist die Zukunft, an der ich baue. Und der naechste Schritt? Der wird noch spannender. Denn das VIBELINK-System kann mehr als nur analysieren — es kann auch korrigieren. Aber dazu mehr im naechsten Post.</p>\n<p>---</p>\n<p><em>Geschrieben um 03:47 Uhr. Kaffee Nummer vier. Die App laeuft. Die drei Gehirne denken. Und ich geh endlich schlafen.</em></p>"
+    }
+  },
+  {
+    "filename": "2026-06-22-drei-inseln-ein-generator.md",
+    "date": "2026-06-22",
+    "tags": [
+      "bauplan-app",
+      "3d",
+      "architektur",
+      "generator",
+      "testing",
+      "e2e"
+    ],
+    "de": {
+      "title": "Drei Inseln, ein Generator: Wie aus von Hand gezeichneten Wänden ein echtes 3D-Haus wird",
+      "description": "In meiner Bauplan-App gab es drei Systeme, die sich gegenseitig nicht kannten — ein gezeichneter Plan rutschte komplett an der Sicherheitsprüfung vorbei. An einem Tag habe ich die drei Inseln verbunden und dabei einen Bug gefunden, der jahrelang still mitgelaufen wäre.",
+      "tags": [
+        "bauplan-app",
+        "3d",
+        "architektur",
+        "generator",
+        "testing",
+        "e2e"
+      ],
+      "content": "<h2>Das Problem: drei Inseln, die sich nicht kennen</h2>\n<p>Meine Bauplan-App baut aus einem Grundriss ein dreidimensionales Haus. Dahinter stecken eigentlich drei getrennte Teile: die <strong>Zeichenmaschine</strong> (wo man Wände zieht), das <strong>Lock-System</strong> (das festhält, was unverrückbar stimmen muss) und der <strong>Generator</strong> (der daraus das echte 3D-Modell rechnet). Ein gründliches Review brachte den wunden Punkt ans Licht: Ein gezeichneter Plan wanderte <strong>direkt</strong> in die 3D-Form — <strong>am Generator und am Lock-System vorbei</strong>. Drei Inseln, kein Steg dazwischen.</p>\n<h2>Der Bug, der zwei von fünf Türen offen ließ</h2>\n<p>Beim Prüfen fiel ein zweiter, subtilerer Fehler auf. Das Lock-System soll garantieren, dass bestimmte Bauteile exakt da bleiben, wo sie hingehören. Es prüfte aber nur <strong>eine</strong> Sorte Wand (die tragenden Wände). Die später ergänzten <strong>Außenwände und Räume</strong> bekamen zwar den Stempel „unverrückbar\" — nur erzwungen wurde er <strong>nie</strong>. Bildlich: Fünf Türen sollten abgeschlossen sein, zwei standen offen, und niemand hat es gemerkt, weil das Schloss das Nachsehen vergaß.</p>\n<p>Der Fix (Version 1.7.79) zieht das nach: Jeder gesperrte Raum muss lagetreu im Modell stehen, die generierte Gebäudehülle muss die Außenwände abdecken — mit einer Toleranz, die zum Raster der App passt (15 Zentimeter, weil Räume auf 12,5er-Schritte einrasten).</p>\n<h2>Die Brücke zwischen den Inseln</h2>\n<p>Der eigentliche Durchbruch kam mit Version 1.7.80: ein neuer Knopf, <strong>„Rekonstruktion bauen\"</strong>. Er nimmt die aktuell gezeichneten Wände und Räume, sperrt sie als unverrückbar und schickt sie durch <strong>denselben</strong> Generator, der auch sonst Häuser baut. Das ist genau das Prinzip, das ich immer wollte, jetzt endlich fest verdrahtet: <strong>Was ich gezeichnet habe, steht fest — den ganzen Rest füllt der Generator.</strong> Und weil alles durch denselben Weg läuft, prüft das reparierte Lock-System nun automatisch mit.</p>\n<p>Am Ende des Tages: <strong>305 Tests grün, null Typfehler.</strong> Die drei Inseln haben endlich eine Brücke.</p>\n<h2>Takeaway</h2>\n<p>Die gefährlichsten Fehler sind nicht die, die laut abstürzen, sondern die, die still danebenlaufen — ein Schloss, das „abgeschlossen\" anzeigt, aber nicht abschließt. Sichtbar werden sie erst, wenn man die Teile zwingt, durch <strong>einen</strong> gemeinsamen Weg zu laufen. Noch ist nicht alles fertig: Der Generator füllt bisher nur die eine gezeichnete Etage — die Spiegel-Wohnung und die übereinandergestapelten Geschosse fehlen noch. Genau das ist das Herzstück, an dem es als Nächstes weitergeht.</p>"
+    },
+    "en": {
+      "title": "Drei Inseln, ein Generator: Wie aus von Hand gezeichneten Wänden ein echtes 3D-Haus wird",
+      "description": "In meiner Bauplan-App gab es drei Systeme, die sich gegenseitig nicht kannten — ein gezeichneter Plan rutschte komplett an der Sicherheitsprüfung vorbei. An einem Tag habe ich die drei Inseln verbunden und dabei einen Bug gefunden, der jahrelang still mitgelaufen wäre.",
+      "tags": [
+        "bauplan-app",
+        "3d",
+        "architektur",
+        "generator",
+        "testing",
+        "e2e"
+      ],
+      "content": "<h2>Das Problem: drei Inseln, die sich nicht kennen</h2>\n<p>Meine Bauplan-App baut aus einem Grundriss ein dreidimensionales Haus. Dahinter stecken eigentlich drei getrennte Teile: die <strong>Zeichenmaschine</strong> (wo man Wände zieht), das <strong>Lock-System</strong> (das festhält, was unverrückbar stimmen muss) und der <strong>Generator</strong> (der daraus das echte 3D-Modell rechnet). Ein gründliches Review brachte den wunden Punkt ans Licht: Ein gezeichneter Plan wanderte <strong>direkt</strong> in die 3D-Form — <strong>am Generator und am Lock-System vorbei</strong>. Drei Inseln, kein Steg dazwischen.</p>\n<h2>Der Bug, der zwei von fünf Türen offen ließ</h2>\n<p>Beim Prüfen fiel ein zweiter, subtilerer Fehler auf. Das Lock-System soll garantieren, dass bestimmte Bauteile exakt da bleiben, wo sie hingehören. Es prüfte aber nur <strong>eine</strong> Sorte Wand (die tragenden Wände). Die später ergänzten <strong>Außenwände und Räume</strong> bekamen zwar den Stempel „unverrückbar\" — nur erzwungen wurde er <strong>nie</strong>. Bildlich: Fünf Türen sollten abgeschlossen sein, zwei standen offen, und niemand hat es gemerkt, weil das Schloss das Nachsehen vergaß.</p>\n<p>Der Fix (Version 1.7.79) zieht das nach: Jeder gesperrte Raum muss lagetreu im Modell stehen, die generierte Gebäudehülle muss die Außenwände abdecken — mit einer Toleranz, die zum Raster der App passt (15 Zentimeter, weil Räume auf 12,5er-Schritte einrasten).</p>\n<h2>Die Brücke zwischen den Inseln</h2>\n<p>Der eigentliche Durchbruch kam mit Version 1.7.80: ein neuer Knopf, <strong>„Rekonstruktion bauen\"</strong>. Er nimmt die aktuell gezeichneten Wände und Räume, sperrt sie als unverrückbar und schickt sie durch <strong>denselben</strong> Generator, der auch sonst Häuser baut. Das ist genau das Prinzip, das ich immer wollte, jetzt endlich fest verdrahtet: <strong>Was ich gezeichnet habe, steht fest — den ganzen Rest füllt der Generator.</strong> Und weil alles durch denselben Weg läuft, prüft das reparierte Lock-System nun automatisch mit.</p>\n<p>Am Ende des Tages: <strong>305 Tests grün, null Typfehler.</strong> Die drei Inseln haben endlich eine Brücke.</p>\n<h2>Takeaway</h2>\n<p>Die gefährlichsten Fehler sind nicht die, die laut abstürzen, sondern die, die still danebenlaufen — ein Schloss, das „abgeschlossen\" anzeigt, aber nicht abschließt. Sichtbar werden sie erst, wenn man die Teile zwingt, durch <strong>einen</strong> gemeinsamen Weg zu laufen. Noch ist nicht alles fertig: Der Generator füllt bisher nur die eine gezeichnete Etage — die Spiegel-Wohnung und die übereinandergestapelten Geschosse fehlen noch. Genau das ist das Herzstück, an dem es als Nächstes weitergeht.</p>"
+    }
+  },
+  {
+    "filename": "2026-06-21-bildgenerierung-kostenlos.md",
+    "date": "2026-06-21",
+    "tags": [
+      "bauplan-app",
+      "ki",
+      "bildgenerierung",
+      "pollinations",
+      "comfyui",
+      "kosten"
+    ],
+    "de": {
+      "title": "Von 50 Cent auf 0 Euro: Wie ich die Bildgenerierung meiner Bauplan-App kostenlos gemacht habe",
+      "description": "Die Bauplan-App malt Bauphasen-Bilder mit KI — pro Lauf kostete das rund 50 Cent. Die Jagd nach der Null vor dem Komma führte über eine lokale GPU bis zu einem Gratis-Dienst, der am Ende sogar besser aussah.",
+      "tags": [
+        "bauplan-app",
+        "ki",
+        "bildgenerierung",
+        "pollinations",
+        "comfyui",
+        "kosten"
+      ],
+      "content": "<h2>Das Problem: jedes Bild kostet</h2>\n<p>Meine Bauplan-App erzeugt zu jedem Bauabschnitt ein Bild — also kleine Visualisierungen davon, wie ein Haus Schritt für Schritt entsteht. Dafür lief bisher Googles Bildmodell mit dem hübschen Spitznamen „Nano Banana\". Das Ergebnis war gut, aber jeder Durchlauf — eine Analyse plus bis zu zwölf Bilder — kostete rund <strong>50 Cent</strong>. Klingt nach nichts. Wird aber zum Problem, sobald viele Leute die App benutzen sollen.</p>\n<p>Ein wichtiges Detail vorweg, das die Jagd erst sinnvoll machte: Der <strong>Text-Teil</strong> — also die Analyse, welche Bauabschnitte es überhaupt gibt — läuft bei Google im <strong>Gratis-Kontingent</strong> (1.500 Anfragen pro Tag umsonst). Geld kostete also <strong>nur</strong> das Malen der Bilder. Damit war das Ziel klar umrissen: Ich musste nicht alles ersetzen, sondern nur die Bildgenerierung auf null bringen.</p>\n<h2>Versuch 1: die eigene Grafikkarte (ComfyUI)</h2>\n<p>Der naheliegende Gedanke: Bilder lokal auf dem eigenen Mac rechnen lassen, mit <strong>ComfyUI</strong> — einem kostenlosen Werkzeug, das Bildmodelle direkt auf der Apple-GPU laufen lässt. Installiert, gestartet, lief auf Port 8000. Und dann kamen die Haken, einer nach dem anderen:</p>\n<ul>\n<li>Das einzige installierte Modell war ein altes, kleines (SD 1.5, nur 512 Pixel) — für <strong>fotorealistische Baustellen schlicht zu schwach</strong>. Für etwas Besseres hätte ich erst mehrere Gigabyte an Modellen nachladen müssen.</li>\n<li>Der Server läuft <strong>nur, solange das App-Fenster offen ist</strong>. Einmal zugeklappt — Port tot.</li>\n<li>Der entscheidende Architektur-Haken: ComfyUI läuft <strong>lokal</strong> auf meinem Rechner. Mein eigentlicher Automatik-Server (der n8n-Workflow auf dem Mietserver) kann eine lokale Adresse aber gar nicht erreichen. Heißt: Bilder hätte nur mein eingeschalteter Mac liefern können — langsam noch dazu.</li>\n</ul>\n<p>Kostenlos? Ja. Praktisch für eine App, die jederzeit für andere laufen soll? Nein.</p>\n<h2>Versuch 2: der Gratis-Dienst, der einfach funktioniert (Pollinations)</h2>\n<p>Dann der Treffer: <strong>Pollinations.ai</strong>. Komplett gratis, <strong>kein Schlüssel, kein Konto</strong>. Man hängt seinen Bildwunsch einfach an eine Web-Adresse — und bekommt direkt ein Bild zurück. Und zwar in <strong>Flux-Qualität</strong>, also deutlich schöner als das alte lokale Modell. Kein Setup, keine offenen Fenster, keine localhost-Falle — es läuft <strong>auch direkt vom Server aus</strong>.</p>\n<p>Damit war die Entscheidung gefallen: Im „Bauplan App\"-Workflow fliegt der teure Nano-Banana-Baustein raus und wird durch Pollinations ersetzt. Aus 50 Cent pro Lauf wird <strong>0 Euro</strong> — bei besserer Bildqualität.</p>\n<h2>Takeaway</h2>\n<p>Der billigste Weg ist nicht immer der, den man zuerst vermutet. Die eigene Hardware fühlt sich „kostenlos\" an, bringt aber versteckte Kosten mit: schwache Modelle, ein Rechner, der laufen muss, und eine Adresse, die von außen keiner erreicht. Manchmal ist der wirklich kostenlose Weg ein fertiger Dienst, der ganz nebenbei auch noch besser aussieht. Wie der neue Baustein dann im Automatik-Workflow verdrahtet wird und die ersten echten Bauphasen-Bilder ausspuckt — das zeige ich im nächsten Post.</p>"
+    },
+    "en": {
+      "title": "Von 50 Cent auf 0 Euro: Wie ich die Bildgenerierung meiner Bauplan-App kostenlos gemacht habe",
+      "description": "Die Bauplan-App malt Bauphasen-Bilder mit KI — pro Lauf kostete das rund 50 Cent. Die Jagd nach der Null vor dem Komma führte über eine lokale GPU bis zu einem Gratis-Dienst, der am Ende sogar besser aussah.",
+      "tags": [
+        "bauplan-app",
+        "ki",
+        "bildgenerierung",
+        "pollinations",
+        "comfyui",
+        "kosten"
+      ],
+      "content": "<h2>Das Problem: jedes Bild kostet</h2>\n<p>Meine Bauplan-App erzeugt zu jedem Bauabschnitt ein Bild — also kleine Visualisierungen davon, wie ein Haus Schritt für Schritt entsteht. Dafür lief bisher Googles Bildmodell mit dem hübschen Spitznamen „Nano Banana\". Das Ergebnis war gut, aber jeder Durchlauf — eine Analyse plus bis zu zwölf Bilder — kostete rund <strong>50 Cent</strong>. Klingt nach nichts. Wird aber zum Problem, sobald viele Leute die App benutzen sollen.</p>\n<p>Ein wichtiges Detail vorweg, das die Jagd erst sinnvoll machte: Der <strong>Text-Teil</strong> — also die Analyse, welche Bauabschnitte es überhaupt gibt — läuft bei Google im <strong>Gratis-Kontingent</strong> (1.500 Anfragen pro Tag umsonst). Geld kostete also <strong>nur</strong> das Malen der Bilder. Damit war das Ziel klar umrissen: Ich musste nicht alles ersetzen, sondern nur die Bildgenerierung auf null bringen.</p>\n<h2>Versuch 1: die eigene Grafikkarte (ComfyUI)</h2>\n<p>Der naheliegende Gedanke: Bilder lokal auf dem eigenen Mac rechnen lassen, mit <strong>ComfyUI</strong> — einem kostenlosen Werkzeug, das Bildmodelle direkt auf der Apple-GPU laufen lässt. Installiert, gestartet, lief auf Port 8000. Und dann kamen die Haken, einer nach dem anderen:</p>\n<ul>\n<li>Das einzige installierte Modell war ein altes, kleines (SD 1.5, nur 512 Pixel) — für <strong>fotorealistische Baustellen schlicht zu schwach</strong>. Für etwas Besseres hätte ich erst mehrere Gigabyte an Modellen nachladen müssen.</li>\n<li>Der Server läuft <strong>nur, solange das App-Fenster offen ist</strong>. Einmal zugeklappt — Port tot.</li>\n<li>Der entscheidende Architektur-Haken: ComfyUI läuft <strong>lokal</strong> auf meinem Rechner. Mein eigentlicher Automatik-Server (der n8n-Workflow auf dem Mietserver) kann eine lokale Adresse aber gar nicht erreichen. Heißt: Bilder hätte nur mein eingeschalteter Mac liefern können — langsam noch dazu.</li>\n</ul>\n<p>Kostenlos? Ja. Praktisch für eine App, die jederzeit für andere laufen soll? Nein.</p>\n<h2>Versuch 2: der Gratis-Dienst, der einfach funktioniert (Pollinations)</h2>\n<p>Dann der Treffer: <strong>Pollinations.ai</strong>. Komplett gratis, <strong>kein Schlüssel, kein Konto</strong>. Man hängt seinen Bildwunsch einfach an eine Web-Adresse — und bekommt direkt ein Bild zurück. Und zwar in <strong>Flux-Qualität</strong>, also deutlich schöner als das alte lokale Modell. Kein Setup, keine offenen Fenster, keine localhost-Falle — es läuft <strong>auch direkt vom Server aus</strong>.</p>\n<p>Damit war die Entscheidung gefallen: Im „Bauplan App\"-Workflow fliegt der teure Nano-Banana-Baustein raus und wird durch Pollinations ersetzt. Aus 50 Cent pro Lauf wird <strong>0 Euro</strong> — bei besserer Bildqualität.</p>\n<h2>Takeaway</h2>\n<p>Der billigste Weg ist nicht immer der, den man zuerst vermutet. Die eigene Hardware fühlt sich „kostenlos\" an, bringt aber versteckte Kosten mit: schwache Modelle, ein Rechner, der laufen muss, und eine Adresse, die von außen keiner erreicht. Manchmal ist der wirklich kostenlose Weg ein fertiger Dienst, der ganz nebenbei auch noch besser aussieht. Wie der neue Baustein dann im Automatik-Workflow verdrahtet wird und die ersten echten Bauphasen-Bilder ausspuckt — das zeige ich im nächsten Post.</p>"
+    }
+  },
+  {
+    "filename": "2026-06-04-automatisiertes-arbeitstagebuch-agent.md",
+    "date": "2026-06-04",
+    "tags": [
+      "automatisierung",
+      "agents",
+      "scheduled-tasks",
+      "knowledge-management",
+      "google-drive",
+      "dokumentation"
+    ],
+    "de": {
+      "title": "Ein automatisiertes Arbeitstagebuch: Wie ein Hintergrund-Agent meine Sessions in ein Entwickler-Logbuch verwandelt",
+      "description": "Architektur eines selbstlaufenden Dokumentations-Agenten, der mehrmals täglich Arbeitssitzungen ausliest, strukturiert protokolliert und abends einen veröffentlichungsreifen Blog-Post destilliert — ohne manuellen Aufwand.",
+      "tags": [
+        "automatisierung",
+        "agents",
+        "scheduled-tasks",
+        "knowledge-management",
+        "google-drive",
+        "dokumentation"
+      ],
+      "content": "<h2>Das Problem: Wer schnell baut, dokumentiert zu langsam</h2>\n<p>Wer an vielen Fronten gleichzeitig baut — 3D-Szenen, App-Prototypen, Integrationen, Infrastruktur — produziert jeden Tag eine Menge Kontext, der spurlos verschwindet, sobald die Session geschlossen ist. Genau das hat ein Audit meines Wissens-Systems heute schonungslos gezeigt: Die <code>context/</code>-Dateien standen elf Tage still, während im Hintergrund massiv weitergebaut wurde. Die Werkbank-Doku hinkt der Bau-Geschwindigkeit hinterher. Das ist kein Disziplin-Problem, sondern ein Strukturproblem — manuelles Protokollieren skaliert nicht gegen den eigenen Output.</p>\n<p>Die Lösung war deshalb nicht „mehr Disziplin\", sondern ein <strong>Agent, der das Protokollieren übernimmt</strong> — still, im Hintergrund, ohne dass ich etwas tun muss.</p>\n<h2>Die Architektur: ein Scheduled Task mit klaren Rubriken</h2>\n<p>Der Kern ist ein zeitgesteuerter Hintergrund-Task, der fünfmal täglich läuft (11, 14, 17, 20 und 23 Uhr). Bei jedem Lauf macht er dasselbe deterministische Programm:</p>\n<ol>\n<li><strong>Zeitanker setzen</strong> — aktuelles Datum und Uhrzeit über die Shell bestimmen. Die Tagesdatei ist schlicht <code>&lt;Datum&gt;.md</code>.</li>\n<li><strong>Sitzungen auslesen</strong> — über ein <code>list_sessions</code>/<code>read_transcript</code>-Interface die zuletzt aktiven Arbeitssitzungen abgreifen. Die eigenen Tagebuch-Läufe und rein automatische System-Tasks werden bewusst herausgefiltert, damit das Log nur echte Arbeit enthält.</li>\n<li><strong>Deduplizieren</strong> — die bestehende Tagesdatei lesen und nur das anhängen, was seit dem letzten Lauf neu hinzukam (Vergleich über die bereits dokumentierten Zeitstempel). Bestehender Inhalt wird nie überschrieben, nur ergänzt.</li>\n<li><strong>Strukturiert anhängen</strong> — ein neuer Abschnitt mit Zeitstempel und vier festen Rubriken: <em>Konkrete Arbeit &amp; Ergebnisse</em>, <em>Ideen &amp; Konzepte</em>, <em>Denkprozess &amp; Reflexion</em>, <em>Nächste Schritte / To-dos</em>.</li>\n</ol>\n<p>Die vier Rubriken sind das eigentliche Designprinzip. Sie zwingen den Agenten, nicht nur <em>was</em> gebaut wurde festzuhalten, sondern auch das <em>Warum</em> und die <em>Entscheidungswege</em> — also genau den Kontext, der sonst verloren geht. Ein reines Commit-Log hält fest, dass etwas passiert ist; dieses Format hält fest, <em>wie gedacht</em> wurde.</p>\n<h2>Speicher: lokaler Drive-Mount statt API-Gefrickel</h2>\n<p>Geschrieben wird direkt in einen lokal eingehängten Google-Drive-Ordner (<code>Second Brain/Arbeitstagebuch/</code>). Das ist die pragmatische Entscheidung des Tages: Statt über die Drive-API Dateien zu erzeugen, schreibt der Agent in den synchronisierten Ordner auf der Platte — Google Drive übernimmt die Cloud-Synchronisation von selbst. Ergebnis: dieselbe Datei ist sofort lokal, im Web und in der App verfügbar, ohne zusätzliche Integrationsschicht. Der Drive-Connector bleibt für die Fälle reserviert, die lokal nicht gehen (Freigabe-Links, Berechtigungen).</p>\n<h2>Der Abendlauf: vom Roh-Log zum Blog-Post</h2>\n<p>Der 23-Uhr-Lauf macht zwei Dinge mehr als die Tagläufe. Erstens schreibt er einen <strong>Tagesabschluss</strong> — eine Synthese über alle vier Rubriken: Was wurde erreicht, welche Ideen sind gereift, welche roten Fäden im Denken, was steht morgen an. Zweitens <strong>destilliert er genau einen veröffentlichungsreifen Blog-Post</strong> aus dem Tagesmaterial und legt ihn getrennt unter <code>Blog-Posts/</code> ab.</p>\n<p>Diese Trennung ist bewusst: Das Tagebuch ist Rohmaterial — vollständig, ungeschönt, in Stichpunkten. Der Blog-Post ist die kuratierte, technisch fokussierte Ein-Kernbotschaft-Version für die Öffentlichkeit. Ein Speicherort für Wahrheit, ein zweiter für Erzählung. Dieser Post hier ist das erste Produkt dieser Pipeline.</p>\n<h2>Eine Designregel, die sich durchzieht: vorbereiten, aber nicht entscheiden</h2>\n<p>Der Agent ist explizit darauf ausgelegt, <strong>nichts zu erfinden</strong> — er dokumentiert nur, was wirklich in den Sitzungen vorkam. Gab es keine neue Aktivität, schreibt er eine knappe Zeile und gut. Diese Zurückhaltung ist dieselbe Haltung, die sich heute durch die ganze Arbeit zog: Beim OAuth-Consent-Screen einer Integration wurde der Setup-Prozess komplett vorbereitet, aber das rechtlich bindende Zustimmungs-Häkchen bewusst dem Menschen überlassen. Ein guter Agent bereitet vor und macht entscheidungsreif — die Entscheidung mit Folgen trifft der Mensch.</p>\n<h2>Takeaway</h2>\n<p>Dokumentation, die man manuell pflegen muss, verliert immer gegen die eigene Produktivität. Der Ausweg ist nicht mehr Disziplin, sondern ein Agent mit drei Eigenschaften: <strong>deterministischer Ablauf</strong> (Zeitanker, auslesen, deduplizieren, anhängen), <strong>erzwungene Struktur</strong> (feste Rubriken, die das Warum mitnehmen) und <strong>klare Grenzen</strong> (nichts erfinden, keine folgenreichen Entscheidungen selbst treffen). Das Ergebnis ist ein Logbuch, das sich von selbst füllt — und am Ende des Tages sogar die Erzählung gleich mitliefert.</p>"
+    },
+    "en": {
+      "title": "An Automated Work Journal: How a Background Agent Turns My Sessions Into a Developer Logbook",
+      "description": "The architecture of a self-running documentation agent that reads work sessions several times a day, logs them in a structured way, and distills a publish-ready blog post each evening — with zero manual effort.",
+      "tags": [
+        "automation",
+        "agents",
+        "scheduled-tasks",
+        "knowledge-management",
+        "google-drive",
+        "documentation"
+      ],
+      "content": "<h2>The problem: whoever builds fast documents too slowly</h2>\n<p>If you build on many fronts at once — 3D scenes, app prototypes, integrations, infrastructure — you produce a ton of context every day that vanishes without a trace the moment the session closes. An audit of my knowledge system today showed exactly that, mercilessly: the <code>context/</code> files had sat untouched for eleven days while a huge amount was being built in the background. The workbench docs lag behind the build speed. That's not a discipline problem, it's a structural one — manual logging doesn't scale against your own output.</p>\n<p>So the solution wasn't \"more discipline\" but an <strong>agent that takes over the logging</strong> — quietly, in the background, without me having to do anything.</p>\n<h2>The architecture: a scheduled task with clear sections</h2>\n<p>The core is a time-triggered background task that runs five times a day (11 AM, 2, 5, 8 and 11 PM). On every run it executes the same deterministic routine:</p>\n<ol>\n<li><strong>Set a time anchor</strong> — determine the current date and time via the shell. The daily file is simply <code>&lt;date&gt;.md</code>.</li>\n<li><strong>Read the sessions</strong> — pull the most recently active work sessions through a <code>list_sessions</code>/<code>read_transcript</code> interface. The agent's own journal runs and purely automatic system tasks are deliberately filtered out, so the log only contains real work.</li>\n<li><strong>Deduplicate</strong> — read the existing daily file and append only what's new since the last run (compared via the already-documented timestamps). Existing content is never overwritten, only extended.</li>\n<li><strong>Append in a structured way</strong> — a new section with a timestamp and four fixed sections: <em>Concrete work &amp; results</em>, <em>Ideas &amp; concepts</em>, <em>Thought process &amp; reflection</em>, <em>Next steps / to-dos</em>.</li>\n</ol>\n<p>The four sections are the actual design principle. They force the agent to capture not just <em>what</em> was built, but also the <em>why</em> and the <em>decision paths</em> — exactly the context that otherwise gets lost. A plain commit log records that something happened; this format records <em>how it was thought through</em>.</p>\n<h2>Storage: a local Drive mount instead of API fiddling</h2>\n<p>Everything is written straight into a locally mounted Google Drive folder (<code>Second Brain/Arbeitstagebuch/</code>). That's the pragmatic decision of the day: instead of creating files through the Drive API, the agent writes into the synced folder on disk — Google Drive handles the cloud sync on its own. The result: the same file is immediately available locally, on the web and in the app, with no extra integration layer. The Drive connector stays reserved for the cases that don't work locally (share links, permissions).</p>\n<h2>The evening run: from raw log to blog post</h2>\n<p>The 11 PM run does two more things than the daytime runs. First, it writes a <strong>daily wrap-up</strong> — a synthesis across all four sections: what was achieved, which ideas matured, which threads run through the thinking, what's up next. Second, it <strong>distills exactly one publish-ready blog post</strong> from the day's material and files it separately under <code>Blog-Posts/</code>.</p>\n<p>That separation is intentional: the journal is raw material — complete, unpolished, in bullet points. The blog post is the curated, technically focused, one-core-message version for the public. One place for truth, a second for narrative. This very post is the first product of that pipeline.</p>\n<h2>A design rule that runs through everything: prepare, but don't decide</h2>\n<p>The agent is explicitly built to <strong>invent nothing</strong> — it only documents what actually happened in the sessions. If there was no new activity, it writes a short line and that's it. That restraint is the same stance that ran through the entire day's work: on the OAuth consent screen of an integration, the setup process was fully prepared, but the legally binding consent checkbox was deliberately left to the human. A good agent prepares and makes things decision-ready — the decision with consequences is made by the human.</p>\n<h2>Takeaway</h2>\n<p>Documentation you have to maintain by hand always loses against your own productivity. The way out isn't more discipline, but an agent with three properties: a <strong>deterministic routine</strong> (time anchor, read, deduplicate, append), <strong>enforced structure</strong> (fixed sections that carry the why), and <strong>clear boundaries</strong> (invent nothing, make no consequential decisions on its own). The result is a logbook that fills itself — and by the end of the day even delivers the narrative along with it.</p>"
+    }
+  }
+];
+
+// ═══ RENDER ENGINE ═══
+// ═══ I18N (DE / EN) ═══
+const I18N = {
+  de: {
+    nav_home: 'Startseite', nav_blog: 'Blog', nav_projects: 'Projekte', nav_contact: 'Kontakt',
+    posts: 'POSTS:', last: 'LETZTER:', tags: 'TAGS:', status: 'STATUS:', online: '● ONLINE',
+    loading: 'LADE EINTRÄGE', rights: 'Alle Rechte vorbehalten',
+    read_aloud: 'VORLESEN', pause: 'PAUSE', stop: 'STOP', ready: 'Bereit',
+    reading: 'Wird vorgelesen…', done: 'Fertig', error: 'Fehler', paused: 'Pausiert',
+    expand: '[ ▼ LESEN ]', collapse: '[ ▲ SCHLIESSEN ]',
+    sys_ready: (n) => `SYSTEM READY — ${n} EINTRÄGE GELADEN — LIVETICKER AKTIV`,
+    toggle: '[ DE ▸ EN ]',
+  },
+  en: {
+    nav_home: 'Home', nav_blog: 'Blog', nav_projects: 'Projects', nav_contact: 'Contact',
+    posts: 'POSTS:', last: 'LATEST:', tags: 'TAGS:', status: 'STATUS:', online: '● ONLINE',
+    loading: 'LOADING ENTRIES', rights: 'All rights reserved',
+    read_aloud: 'READ', pause: 'PAUSE', stop: 'STOP', ready: 'Ready',
+    reading: 'Reading aloud…', done: 'Done', error: 'Error', paused: 'Paused',
+    expand: '[ ▼ READ ]', collapse: '[ ▲ COLLAPSE ]',
+    sys_ready: (n) => `SYSTEM READY — ${n} ENTRIES LOADED — LIVE TICKER ACTIVE`,
+    toggle: '[ EN ▸ DE ]',
+  },
+};
+let LANG = (localStorage.getItem('vl_lang') === 'en') ? 'en' : 'de';
+function t(k) { return I18N[LANG][k]; }
+function LP(post) { return post[LANG] || post.de || post; }
+function applyLang() {
+  document.documentElement.lang = LANG;
+  document.querySelectorAll('[data-i18n]').forEach((el) => {
+    const v = I18N[LANG][el.getAttribute('data-i18n')];
+    if (typeof v === 'string') el.textContent = v;
+  });
+  const sv = document.getElementById('status-val'); if (sv) sv.textContent = t('online');
+  const lt = document.getElementById('lang-toggle'); if (lt) lt.textContent = t('toggle');
+  if (document.getElementById('post-0')) renderPosts();
+}
+function toggleLang() {
+  LANG = (LANG === 'de') ? 'en' : 'de';
+  localStorage.setItem('vl_lang', LANG);
+  applyLang();
+}
+
+function renderPosts() {
+  const container = document.getElementById('posts-container');
+  const loading = document.getElementById('loading');
+
+  // Sort newest first
+  const sorted = [...BLOG_POSTS].sort((a, b) => b.date.localeCompare(a.date));
+
+  // Update stats
+  document.getElementById('post-count').textContent = sorted.length;
+  document.getElementById('last-date').textContent = sorted[0]?.date || '-';
+  const allTags = [...new Set(sorted.flatMap(p => LP(p).tags))];
+  document.getElementById('tag-count').textContent = allTags.length;
+
+  // Build ticker
+  const tickerParts = sorted.map(p => `▸ ${p.date}: ${LP(p).title.substring(0, 50)}...`);
+  document.getElementById('ticker').textContent = tickerParts.join('  ') + '  ▸ SYSTEM AKTIV ▸ Blog-Agent 3×/Tag ▸ Hermes Zentrale (AES-256) ▸ ';
+
+  // Render
+  let html = '';
+  sorted.forEach((post, i) => {
+    const openClass = i === 0 ? 'open' : '';
+    const P = LP(post);
+    html += `
+      <div class="post ${openClass}" id="post-${i}">
+        <div class="post-title-bar" onclick="togglePost(${i})">
+          <span class="filename">📄 ${post.filename}</span>
+          <span class="date">${post.date}</span>
+        </div>
+        <div class="post-body">
+          <div class="post-title">${P.title}</div>
+          <div class="post-desc">"${P.description}"</div>
+          <div class="tts-bar">
+            <button class="tts-btn" onclick="ttsPlay(${i}, event)" id="tts-btn-${i}">▶ ${t('read_aloud')}</button>
+            <button class="tts-btn" onclick="ttsPause(${i}, event)">⏸ ${t('pause')}</button>
+            <button class="tts-btn" onclick="ttsStop(${i}, event)">⏹ ${t('stop')}</button>
+            <span class="tts-speed" onclick="ttsSpeed(event)" title="Geschwindigkeit ändern">1.0×</span>
+            <span class="tts-status" id="tts-status-${i}">${t('ready')}</span>
+          </div>
+          <div class="post-tags">
+            ${P.tags.map(tg => `<span class="tag">#${tg}</span>`).join('')}
+          </div>
+          <div class="post-content" id="post-content-${i}">${P.content}</div>
+        </div>
+        <div class="post-toggle" onclick="togglePost(${i})">
+          ${openClass ? t('collapse') : t('expand')}
+        </div>
+      </div>
+    `;
+  });
+
+  if (loading) loading.style.display = 'none';
+  container.innerHTML = html + (container.querySelector('.footer')?.outerHTML || '');
+
+  // Typing effect on header
+  typeStatus();
+}
+
+function togglePost(i) {
+  const post = document.getElementById(`post-${i}`);
+  const toggle = post.querySelector('.post-toggle');
+  post.classList.toggle('open');
+  toggle.textContent = post.classList.contains('open') ? t('collapse') : t('expand');
+}
+
+function typeStatus() {
+  const el = document.querySelector('.header-sub');
+  const text = t('sys_ready')(BLOG_POSTS.length);
+  el.textContent = '';
+  let i = 0;
+  const interval = setInterval(() => {
+    el.textContent = text.substring(0, i) + '█';
+    i++;
+    if (i > text.length) {
+      el.textContent = text;
+      clearInterval(interval);
+    }
+  }, 25);
+}
+
+// ═══ TEXT-TO-SPEECH ENGINE ═══
+let currentTTS = null;
+let ttsRate = 1.0;
+
+function getPostText(i) {
+  const el = document.getElementById(`post-content-${i}`);
+  if (!el) return '';
+  return el.innerText || el.textContent || '';
+}
+
+function ttsPlay(i, e) {
+  e?.stopPropagation();
+
+  // Stop any current speech
+  window.speechSynthesis.cancel();
+
+  const text = getPostText(i);
+  if (!text) return;
+
+  // Try Google TTS first (free, better quality)
+  const googleLang = (LANG === 'en') ? 'en' : 'de';
+  const googleUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${googleLang}&client=tw-ob&q=${encodeURIComponent(text.substring(0, 200))}`;
+
+  // For longer texts, fall back to chunked Google TTS or Web Speech API
+  if (text.length <= 200) {
+    const audio = new Audio(googleUrl);
+    audio.playbackRate = ttsRate;
+    const btn = document.getElementById(`tts-btn-${i}`);
+    const status = document.getElementById(`tts-status-${i}`);
+    btn?.classList.add('active');
+    if (status) status.textContent = '▶ Google TTS';
+    audio.onended = () => { btn?.classList.remove('active'); if (status) status.textContent = '✓ Fertig'; };
+    audio.onerror = () => { /* Fallback to Web Speech */ ttsPlayFallback(i, text); };
+    audio.play().catch(() => ttsPlayFallback(i, text));
+    return;
+  }
+
+  // Longer text: chunk into 200-char pieces via Google TTS
+  const chunks = [];
+  let remaining = text;
+  while (remaining.length > 0) {
+    let end = Math.min(200, remaining.length);
+    // Try to break at sentence end
+    if (end < remaining.length) {
+      const lastDot = remaining.lastIndexOf('.', end);
+      if (lastDot > 100) end = lastDot + 1;
+    }
+    chunks.push(remaining.substring(0, end));
+    remaining = remaining.substring(end);
+  }
+
+  const btn = document.getElementById(`tts-btn-${i}`);
+  const status = document.getElementById(`tts-status-${i}`);
+  btn?.classList.add('active');
+  if (status) status.textContent = '▶ Google TTS (' + chunks.length + ' Teile)';
+
+  let chunkIdx = 0;
+  function playNext() {
+    if (chunkIdx >= chunks.length) {
+      btn?.classList.remove('active');
+      if (status) status.textContent = '✓ Fertig';
+      return;
+    }
+    const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${googleLang}&client=tw-ob&q=${encodeURIComponent(chunks[chunkIdx])}`;
+    const a = new Audio(url);
+    a.playbackRate = ttsRate;
+    if (status) status.textContent = '▶ Teil ' + (chunkIdx+1) + '/' + chunks.length;
+    a.onended = () => { chunkIdx++; playNext(); };
+    a.onerror = () => { ttsPlayFallback(i, text); };
+    a.play().catch(() => ttsPlayFallback(i, text));
+  }
+  playNext();
+  return;
+}
+
+function ttsPlayFallback(i, text) {
+  // Fallback: Web Speech API (schlechtere Stimme)
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = (LANG === 'en') ? 'en-US' : 'de-DE';
+  utterance.rate = ttsRate;
+  utterance.pitch = 0.95;
+
+  const voices = window.speechSynthesis.getVoices();
+  const deVoice = voices.find(v => v.lang.startsWith(LANG === 'en' ? 'en' : 'de')) || voices[0];
+  if (deVoice) utterance.voice = deVoice;
+  
+  const btn = document.getElementById(`tts-btn-${i}`);
+  const status = document.getElementById(`tts-status-${i}`);
+  
+  btn?.classList.add('active');
+  if (status) status.textContent = '▶ ' + t('reading');
+  
+  utterance.onend = () => {
+    btn?.classList.remove('active');
+    if (status) status.textContent = '✓ ' + t('done');
+    currentTTS = null;
+  };
+  
+  utterance.onerror = () => {
+    btn?.classList.remove('active');
+    if (status) status.textContent = '✗ ' + t('error');
+    currentTTS = null;
+  };
+  
+  currentTTS = { index: i, utterance };
+  window.speechSynthesis.speak(utterance);
+}
+
+function ttsPause(i, e) {
+  e?.stopPropagation();
+  const status = document.getElementById(`tts-status-${i}`);
+  if (window.speechSynthesis.paused) {
+    window.speechSynthesis.resume();
+    if (status) status.textContent = '▶ ' + t('reading');
+  } else {
+    window.speechSynthesis.pause();
+    if (status) status.textContent = '⏸ ' + t('paused');
+  }
+}
+
+function ttsStop(i, e) {
+  e?.stopPropagation();
+  window.speechSynthesis.cancel();
+  const btn = document.getElementById(`tts-btn-${i}`);
+  const status = document.getElementById(`tts-status-${i}`);
+  btn?.classList.remove('active');
+  if (status) status.textContent = t('ready');
+  currentTTS = null;
+}
+
+function ttsSpeed(e) {
+  e?.stopPropagation();
+  const speeds = [0.75, 1.0, 1.25, 1.5, 2.0];
+  const idx = speeds.indexOf(ttsRate);
+  ttsRate = speeds[(idx + 1) % speeds.length];
+  // Update all speed displays
+  document.querySelectorAll('.tts-speed').forEach(el => {
+    el.textContent = ttsRate + '×';
+  });
+}
+
+// Load voices (async on some browsers)
+window.speechSynthesis.onvoiceschanged = () => {};
+
+// ═══ INFO MODAL SYSTEM ═══
+const INFO_DATA = {
+  about: {
+    title: 'WAS IST DAS HIER?',
+    lines: [
+      '\u25b8 Willkommen! Das hier ist der <strong>Blog von Tobias Ganster</strong>.',
+      '',
+      '\u25b8 Das Besondere: Dieser Blog <strong>schreibt sich von selbst</strong>.',
+      '  Kein Copy-Paste, kein manuelles Tippen.',
+      '  Im Hintergrund laufen Programme, die automatisch',
+      '  aufschreiben, woran gerade gearbeitet wird.',
+      '',
+      '\u25b8 Du bekommst hier einen <strong>ehrlichen Einblick</strong>',
+      '  in die taegliche Arbeit eines Entwicklers.',
+      '  Was funktioniert, was schiefgeht, was gelernt wird.',
+      '',
+      '\u25b8 <strong>Tipp:</strong> Du kannst dir jeden Beitrag',
+      '  <strong>vorlesen lassen</strong> \u2014 klick einfach auf',
+      '  den \u25b6 VORLESEN Button unter dem Titel!',
+      '',
+      '\u25b8 Viel Spass beim Lesen (oder Zuhoeren)!',
+    ]
+  },
+  brain: {
+    title: 'SECOND BRAIN',
+    lines: [
+      '\u25b8 Das <em>Second Brain</em> ist wie ein <strong>digitales Notizbuch</strong>',
+      '  fuer alles Wichtige im Leben und Business.',
+      '',
+      '\u25b8 Stell dir vor, du haettest einen Assistenten, der',
+      '  <strong>alles mitschreibt</strong>: Ideen, Plaene, Termine,',
+      '  Strategien, Finanzen \u2014 und nie etwas vergisst.',
+      '',
+      '\u25b8 Genau das macht dieses System. Es wird',
+      '  <strong>automatisch 5x am Tag</strong> aktualisiert.',
+      '',
+      '\u25b8 Aufgebaut mit <em>Obsidian</em> \u2014 einer App fuer',
+      '  vernetzte Notizen. Hunderte Eintraege,',
+      '  alle miteinander verbunden.',
+      '',
+      '\u25b8 <strong>Motto:</strong> <em>"Das Second Brain vergisst nie."</em>',
+    ]
+  },
+  autistic: {
+    title: 'AUTISTIC BRAIN',
+    lines: [
+      '\u25b8 Das <em>Autistic Brain</em> ist das <strong>zweite Notizbuch</strong>,',
+      '  aber nur fuer <strong>App-Entwicklung und Technik</strong>.',
+      '',
+      '\u25b8 Hier wird alles gesammelt, was mit Programmieren',
+      '  zu tun hat: Wie Apps aufgebaut sind, welche',
+      '  Designregeln gelten, welche Farben und Schriften.',
+      '',
+      '\u25b8 Zum Beispiel kommt der <strong>Retro-Terminal-Look</strong>',
+      '  dieser Seite komplett aus diesem System \u2014',
+      '  Farben, Schriften, Animationen, alles dokumentiert.',
+      '',
+      '\u25b8 Es ist bewusst <strong>getrennt</strong> vom Second Brain,',
+      '  weil technische Notizen anders organisiert',
+      '  werden muessen als persoenliche.',
+      '',
+      '\u25b8 <strong>Motto:</strong> <em>"Build different. Think in systems."</em>',
+    ]
+  },
+  tech: {
+    title: 'WIE FUNKTIONIERT DAS?',
+    lines: [
+      '\u25b8 <strong>So laeuft es ab:</strong>',
+      '',
+      '  1. Ein Programm schaut sich an, woran gearbeitet wurde',
+      '  2. Es schreibt eine Zusammenfassung als Blogbeitrag',
+      '  3. Der Beitrag erscheint automatisch auf dieser Seite',
+      '',
+      '\u25b8 <strong>Was steckt dahinter:</strong>',
+      '  \u2022 Automatische Texterstellung (3x am Tag)',
+      '  \u2022 Speicherung in der Cloud (Google Drive)',
+      '  \u2022 Automatische Veroeffentlichung auf dieser Seite',
+      '  \u2022 <strong>Vorlesefunktion</strong> per Knopfdruck (im Browser eingebaut)',
+      '',
+      '\u25b8 <strong>Das Beste:</strong> Die gesamte Seite laeuft',
+      '  ohne laufende Kosten \u2014 alles selbst gehostet.',
+      '',
+      '\u25b8 <strong>Tipp:</strong> Probier die Vorlese-Funktion aus!',
+      '  Klick bei jedem Beitrag auf \u25b6 VORLESEN.',
+    ]
+  }
+};
+
+// FIRST VISIT LOGIC
+const _infoSeen = localStorage.getItem('vl_info_seen');
+
+function showInfo(key) {
+  const data = INFO_DATA[key];
+  if (!data) return;
+  document.getElementById('info-title').textContent = data.title;
+  const body = document.getElementById('info-body');
+  body.innerHTML = '';
+  // Nav buttons inside modal
+  const nav = document.createElement('div');
+  nav.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;';
+  Object.keys(INFO_DATA).forEach(k => {
+    const btn = document.createElement('button');
+    btn.className = 'info-btn';
+    btn.textContent = INFO_DATA[k].title;
+    btn.style.cssText = k === key ? 'border-color:var(--dos-cyan);color:var(--dos-cyan);' : '';
+    btn.onclick = () => showInfo(k);
+    nav.appendChild(btn);
+  });
+  body.appendChild(nav);
+  document.getElementById('info-overlay').classList.add('open');
+  data.lines.forEach((line, i) => {
+    const div = document.createElement('div');
+    div.className = 'line';
+    div.innerHTML = line || '&nbsp;';
+    body.appendChild(div);
+    setTimeout(() => div.classList.add('show'), 80 * (i + 1));
+  });
+}
+
+function closeInfo(e) {
+  if (e && e.target !== e.currentTarget && e.type === 'click') return;
+  document.getElementById('info-overlay').classList.remove('open');
+  if (!localStorage.getItem('vl_info_seen')) {
+    localStorage.setItem('vl_info_seen', '1');
+  }
+  document.getElementById('info-fab').classList.add('visible');
+  document.querySelector('.info-bar').classList.add('hidden');
+}
+
+function showInfoPanel() { showInfo('about'); }
+
+function initInfoSection() {
+  const bar = document.querySelector('.info-bar');
+  const fab = document.getElementById('info-fab');
+  if (_infoSeen) {
+    bar.classList.add('hidden');
+    fab.classList.add('visible');
+  } else {
+    setTimeout(() => {
+      showInfo('about');
+      try {
+        const allText = INFO_DATA.about.lines.map(l => l.replace(/<[^>]*>/g, '')).filter(Boolean).join('. ');
+        const utter = new SpeechSynthesisUtterance(allText);
+        utter.lang = 'de-DE';
+        utter.rate = 1.1;
+        speechSynthesis.speak(utter);
+      } catch(e) {}
+    }, 1200);
+  }
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initInfoSection);
+} else {
+  setTimeout(initInfoSection, 500);
+}
+
+// Boot
+window.addEventListener('DOMContentLoaded', () => {
+  window.speechSynthesis.getVoices();
+  applyLang();
+  setTimeout(renderPosts, 600);
+  initGhostTypist();
+});
+
+// ═══ GHOST TYPIST — looks like someone is really typing ═══
+let quotes = [];
+let lastQIdx = -1;
+let ghostCount = 0;
+
+// Nearby wrong keys for realistic typos
+const NEIGHBORS = {
+  'a':'sq','b':'vn','c':'xv','d':'sf','e':'wr','f':'dg','g':'fh',
+  'h':'gj','i':'uo','j':'hk','k':'jl','l':'kö','m':'n,','n':'bm',
+  'o':'ip','p':'oü','q':'wa','r':'et','s':'ad','t':'rz','u':'zi',
+  'v':'cb','w':'qe','x':'yc','y':'x','z':'tu','ä':'a','ö':'l','ü':'p',
+  'A':'S','B':'V','C':'X','D':'S','E':'W','F':'D','G':'F','H':'G',
+  'I':'U','J':'H','K':'J','L':'K','M':'N','N':'B','O':'I','P':'O',
+  'Q':'W','R':'E','S':'A','T':'R','U':'Z','V':'C','W':'Q','X':'Y','Z':'T'
+};
+
+function typoChar(ch) {
+  const n = NEIGHBORS[ch] || NEIGHBORS[ch.toLowerCase()];
+  if (!n) return ch === ' ' ? ' ' : String.fromCharCode(ch.charCodeAt(0) + (Math.random()>.5?1:-1));
+  return n[Math.floor(Math.random() * n.length)];
+}
+
+async function initGhostTypist() {
+  try {
+    const r = await fetch('quotes.json');
+    quotes = await r.json();
+  } catch(e) {
+    quotes = [
+      'Vibe.Link — wo Ideen zu Code werden.',
+      'Keep building. Keep shipping. Keep vibing.',
+      'Agents don\'t sleep. Agents deliver.',
+    ];
+  }
+  setTimeout(ghostType, 5000);
+}
+
+function ghostType() {
+  if (!quotes.length) return;
+  ghostCount++;
+  
+  let idx;
+  do { idx = Math.floor(Math.random() * quotes.length); }
+  while (idx === lastQIdx && quotes.length > 1);
+  lastQIdx = idx;
+  const text = quotes[idx];
+  
+  const withTypos = ghostCount % 3 === 0 || (ghostCount % 2 === 0 && Math.random() > 0.4);
+  
+  // Use the fixed strip element
+  const el = document.getElementById('ghost-target');
+  el.className = 'ghost-type';
+  el.innerHTML = '';
+  
+  // Random color
+  const colors = ['#00f0ff','#39ff14','#ffb627','#a0ffb0'];
+  const color = colors[Math.floor(Math.random() * colors.length)];
+  el.style.color = color;
+  el.style.textShadow = `0 0 8px ${color}40`;
+  
+  // Build action queue
+  const actions = [];
+  
+  // Phase 1: cursor blinks alone for 1-2.5 seconds
+  const blinkTime = 1000 + Math.random() * 1500;
+  actions.push({ type: 'blink', duration: blinkTime });
+  
+  // Phase 2: type the text with human timing
+  if (withTypos) {
+    // Insert 1-2 typo sequences
+    const typoPositions = [];
+    const numTypos = 1 + Math.floor(Math.random() * 2);
+    for (let t = 0; t < numTypos; t++) {
+      typoPositions.push(Math.floor(Math.random() * (text.length - 4)) + 2);
+    }
+    typoPositions.sort((a,b) => a - b);
+    
+    let pos = 0;
+    for (const tp of typoPositions) {
+      // Type correctly up to typo position
+      for (let i = pos; i < tp; i++) {
+        actions.push({ type: 'char', ch: text[i] });
+      }
+      // Type 1-3 wrong characters
+      const wrongCount = 1 + Math.floor(Math.random() * 2);
+      const wrongChars = [];
+      for (let w = 0; w < wrongCount; w++) {
+        const wrongCh = typoChar(text[tp + w] || 'e');
+        wrongChars.push(wrongCh);
+        actions.push({ type: 'char', ch: wrongCh });
+      }
+      // Pause ("noticing the mistake")
+      actions.push({ type: 'pause', duration: 400 + Math.random() * 600 });
+      // Delete wrong chars
+      for (let w = 0; w < wrongCount; w++) {
+        actions.push({ type: 'delete' });
+      }
+      // Small pause before correcting
+      actions.push({ type: 'pause', duration: 150 + Math.random() * 200 });
+      // Type correct chars
+      for (let w = 0; w < wrongCount && (tp + w) < text.length; w++) {
+        actions.push({ type: 'char', ch: text[tp + w] });
+      }
+      pos = tp + wrongCount;
+    }
+    // Type remainder
+    for (let i = pos; i < text.length; i++) {
+      actions.push({ type: 'char', ch: text[i] });
+    }
+  } else {
+    // Clean typing, no errors
+    for (let i = 0; i < text.length; i++) {
+      actions.push({ type: 'char', ch: text[i] });
+    }
+  }
+  
+  // Phase 3: stay visible, then fade
+  actions.push({ type: 'pause', duration: 2500 + Math.random() * 1500 });
+  actions.push({ type: 'fade' });
+  
+  // Execute action queue
+  let currentText = '';
+  let actionIdx = 0;
+  
+  function render() {
+    el.innerHTML = '<span>' + currentText + '</span><span class="ghost-cursor">█</span>';
+  }
+  
+  function runNext() {
+    if (actionIdx >= actions.length) {
+      // Clear and schedule next
+      const next = 10000 + Math.random() * 15000;
+      setTimeout(ghostType, next);
+      return;
+    }
+    
+    const a = actions[actionIdx++];
+    
+    switch(a.type) {
+      case 'blink':
+        el.classList.add('visible');
+        render();
+        setTimeout(runNext, a.duration);
+        break;
+        
+      case 'char':
+        currentText += a.ch;
+        render();
+        let delay = 40 + Math.random() * 60;
+        if (a.ch === ' ') delay += 20 + Math.random() * 40;
+        if (a.ch === '.' || a.ch === '!' || a.ch === ',') delay += 80 + Math.random() * 120;
+        if (a.ch === '—' || a.ch === '-') delay += 50;
+        if (Math.random() < 0.06) delay += 150 + Math.random() * 200;
+        setTimeout(runNext, delay);
+        break;
+        
+      case 'delete':
+        currentText = currentText.slice(0, -1);
+        render();
+        setTimeout(runNext, 50 + Math.random() * 40);
+        break;
+        
+      case 'pause':
+        setTimeout(runNext, a.duration);
+        break;
+        
+      case 'fade':
+        el.classList.add('fading');
+        setTimeout(() => {
+          el.classList.remove('visible', 'fading');
+          el.innerHTML = '';
+          runNext();
+        }, 1300);
+        break;
+    }
+  }
+  
+  runNext();
+}
+
+
+// PROJECTS DATA
+const PROJECTS = [
+  { name: 'VIBE.LINK Blog', status: 'active', desc: 'Automatischer KI-Blog der sich selbst schreibt. Mehrmals taeglich neue Eintraege aus echten Arbeitssitzungen.' },
+  { name: 'Wohnungsplaner / Bauplan App', status: 'beta', desc: 'App zum Erstellen von Wohnungsgrundrissen. KI-gestuetzt, automatische 3D-Visualisierung in Fusion 360.' },
+  { name: 'Second Brain System', status: 'active', desc: 'Persoenliches Wissenssystem mit automatischer Dokumentation. 5x taeglich aktualisiert, hunderte vernetzte Notizen.' },
+  { name: 'Kunst-Galerie & Shop', status: 'planned', desc: 'Online-Galerie fuer Epoxidharz-Kunst und Anatomie-Zeichnungen. Auto-Sync aus Google Drive, Verkauf und Auftragsarbeiten.' },
+  { name: 'Hermes Zentrale', status: 'active', desc: 'Zentrales Steuerungssystem fuer alle Automatisierungen. Credentials-Management, Workflow-Orchestrierung.' },
+  { name: 'Social Media Autopilot', status: 'planned', desc: 'Automatisches Posten auf Instagram, Pinterest, TikTok. KI generiert Varianten aus echten Kunstwerken.' }
+];
+
+function renderProjects() {
+  const list = document.getElementById('projects-list');
+  if (!list) return;
+  const sl = { active: 'AKTIV', beta: 'BETA', planned: 'GEPLANT' };
+  const sc = { active: 'badge-active', beta: 'badge-beta', planned: 'badge-planned' };
+  list.innerHTML = PROJECTS.map(p => '<div class="project-card"><div class="project-name">'+p.name+'</div><div class="project-status"><span class="badge '+sc[p.status]+'">'+sl[p.status]+'</span></div><div class="project-desc">'+p.desc+'</div></div>').join('');
+}
+
+let currentSection = 'blog';
+function showSection(section) {
+  currentSection = section;
+  const bc = document.getElementById('posts-container');
+  const ps = document.getElementById('projects-section');
+  const sb = document.getElementById('stats-bar');
+  const pg = document.getElementById('pagination');
+  if (section === 'blog') { bc.style.display=''; ps.classList.remove('active'); sb.style.display=''; if(pg) pg.style.display=totalPages>1?'flex':'none'; }
+  else if (section === 'projects') { bc.style.display='none'; ps.classList.add('active'); sb.style.display='none'; if(pg) pg.style.display='none'; renderProjects(); }
+  document.querySelectorAll('.dos-menubar span').forEach(s => s.classList.remove('nav-active'));
+  document.querySelectorAll('.dos-menubar span').forEach(s => {
+    const t = s.textContent.trim().toLowerCase();
+    if (section==='blog' && (t==='blog'||s.getAttribute('data-i18n')==='nav_blog')) s.classList.add('nav-active');
+    if (section==='projects' && (t==='projekte'||t==='projects'||s.getAttribute('data-i18n')==='nav_projects')) s.classList.add('nav-active');
+  });
+}
+
+const POSTS_PER_PAGE = 10;
+let currentPage = 1;
+let totalPages = 1;
+
+</script>
+<!-- VIBELINK Support-Chat -->
+<script>window.VIBELINK_CHAT_ENDPOINT = ""; /* TODO: Proxy-URL eintragen */</script>
+<script src="chat-widget.js" defer></script>
+</body>
+</html>
