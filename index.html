@@ -150,17 +150,31 @@
       text-shadow: none;
       box-shadow: 0 0 26px rgba(79,216,255,0.85);
     }
+    /* Login/Abo faellt bewusst auf - das ist der Abo-Zugang */
+    .nav-link.nav-login {
+      color: var(--dos-amber, #ffb000);
+      border-color: var(--dos-amber, #ffb000);
+      background: rgba(45, 28, 0, 0.85);
+      text-shadow: 0 0 8px rgba(255,176,0,0.7);
+      box-shadow: 0 0 14px rgba(255,176,0,0.35), inset 0 0 12px rgba(255,176,0,0.12);
+    }
+    .nav-link.nav-login:hover {
+      background: var(--dos-amber, #ffb000);
+      color: #181000;
+      box-shadow: 0 0 26px rgba(255,176,0,0.85);
+    }
 
     /* Social Links */
     .social-links {
       display: flex;
-      gap: 28px;
-      margin-top: 10px;
+      gap: 34px;
+      margin-top: 42px;
       flex-wrap: wrap;
       justify-content: center;
+      max-width: 900px;
     }
     .social-link {
-      font-size: 1.8rem;
+      font-size: 2.4rem;
       color: var(--dos-green);
       text-decoration: none;
       transition: all 0.2s;
@@ -172,7 +186,7 @@
     }
     .social-link .label {
       font-family: var(--font-pixel);
-      font-size: 0.4rem;
+      font-size: 0.55rem;
       letter-spacing: 1px;
     }
     .social-link:hover {
@@ -296,6 +310,7 @@
     <a class="nav-link" href="#gaming">▸ GAMING</a>
     <a class="nav-link" href="#about">▸ ÜBER MICH</a>
     <a class="nav-link" href="https://ganster.tech" target="_blank" rel="noopener">▸ GANSTER.TECH</a>
+    <a class="nav-link nav-login" href="#login">▸ LOGIN / ABO</a>
   </div>
 
   <div class="social-links">
@@ -306,6 +321,9 @@
     <a class="social-link" href="https://www.tiktok.com/@tobiasganster" target="_blank" title="TikTok"><i class="fab fa-tiktok"></i><span class="label">TIKTOK</span></a>
     <a class="social-link" href="https://twitter.com/tobiasganster" target="_blank" title="X"><i class="fab fa-x-twitter"></i><span class="label">X</span></a>
     <a class="social-link" href="https://www.youtube.com/@tobiasganster" target="_blank" title="YouTube"><i class="fab fa-youtube"></i><span class="label">YOUTUBE</span></a>
+    <a class="social-link" href="https://www.facebook.com/tobiasganster" target="_blank" title="Facebook"><i class="fab fa-facebook"></i><span class="label">FACEBOOK</span></a>
+    <a class="social-link" href="https://t.me/tobiasganster" target="_blank" title="Telegram"><i class="fab fa-telegram"></i><span class="label">TELEGRAM</span></a>
+    <a class="social-link" href="mailto:www.tobiasganster.de@gmail.com" title="E-Mail"><i class="fas fa-envelope"></i><span class="label">E-MAIL</span></a>
   </div>
 </div>
 
