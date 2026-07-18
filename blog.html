@@ -630,6 +630,51 @@
     .info-modal-body em { color: var(--dos-cyan); font-style: normal; }
     .info-modal-body .line { margin-bottom: 8px; opacity: 0; transition: opacity 0.15s; }
     .info-modal-body .line.show { opacity: 1; }
+
+    /* ═══ Seitliche Buttonleiste ═══ */
+    .side-rail {
+      position: fixed;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 60;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 8px;
+      background: rgba(0, 12, 0, 0.8);
+      border: 1px solid #1f8f2f;
+      border-right: none;
+    }
+    .side-rail button {
+      font-family: inherit;
+      font-size: 0.62rem;
+      letter-spacing: 1px;
+      background: transparent;
+      color: #33ff33;
+      border: 1px solid #1f8f2f;
+      padding: 9px 11px;
+      cursor: pointer;
+      text-align: left;
+      white-space: nowrap;
+      transition: background 0.15s, color 0.15s;
+    }
+    .side-rail button:hover { background: #33ff33; color: #000; }
+
+    /* Auf schmalen Schirmen: Leiste wandert nach oben und wird horizontal */
+    @media (max-width: 900px) {
+      .side-rail {
+        position: static;
+        transform: none;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        border: none;
+        border-bottom: 1px solid #1f8f2f;
+        background: rgba(0, 12, 0, 0.6);
+      }
+      .side-rail button { font-size: 0.58rem; padding: 7px 9px; }
+    }
   </style>
 </head>
 <body>
@@ -717,9 +762,16 @@
 </div>
 
 <!-- Info Buttons -->
-<div class="info-bar">
-  <button class="info-btn" onclick="showInfo('about')">? ERKLÄRUNG ZUM BLOG</button>
-  <button class="info-btn" onclick="showSection('projects')">▦ PROJEKTE &amp; APPS</button>
+<!-- leer: wird von showInfo() angesprochen, Buttons sitzen jetzt in der Seitenleiste -->
+<div class="info-bar" style="display:none"></div>
+
+<!-- Seitliche Buttonleiste: alles Erklaerende sitzt hier, die Beitragsliste bleibt frei -->
+<div class="side-rail" id="side-rail">
+  <button onclick="showInfo('about')">? ERKLÄRUNG ZUM BLOG</button>
+  <button onclick="showInfo('brain')">◈ SECOND BRAIN</button>
+  <button onclick="showInfo('autistic')">◇ AUTISTIC BRAIN</button>
+  <button onclick="showInfo('tech')">⚙ WIE FUNKTIONIERT DAS</button>
+  <button onclick="showSection('projects')">▦ PROJEKTE &amp; APPS</button>
 </div>
 
 <button class="info-fab" id="info-fab" onclick="showInfoPanel()">? INFO</button>
