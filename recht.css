@@ -1,0 +1,63 @@
+/* Gemeinsames Layout fuer Impressum & Datenschutz (VIBE.LINK) */
+:root {
+  --dos-bg: #050a05;
+  --dos-green: #33ff33;
+  --dos-dim: #1f8f2f;
+  --dos-cyan: #4fd8ff;
+  --dos-amber: #ffb000;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--dos-bg);
+  color: #bdf5bd;
+  font-family: "Courier New", Courier, monospace;
+  line-height: 1.75;
+  min-height: 100vh;
+}
+.menubar {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  background: rgba(0,0,0,0.9);
+  border-bottom: 1px solid var(--dos-dim);
+  padding: 8px 12px; font-size: 0.9rem;
+  position: sticky; top: 0; z-index: 10;
+}
+.menubar a, .menubar span { color: var(--dos-green); text-decoration: none; padding: 3px 10px; }
+.menubar a:hover { background: var(--dos-green); color: #000; }
+.menubar .zurueck {
+  color: var(--dos-cyan); border: 1px solid var(--dos-cyan);
+  font-weight: bold; cursor: pointer;
+}
+.wrap { max-width: 820px; margin: 0 auto; padding: 34px 20px 70px; }
+h1 {
+  font-size: clamp(1.4rem, 4vw, 2.2rem);
+  color: var(--dos-cyan); letter-spacing: 4px;
+  margin-bottom: 6px;
+}
+.sub { color: var(--dos-dim); font-size: 0.8rem; letter-spacing: 2px; margin-bottom: 30px; }
+h2 {
+  font-size: 1rem; color: var(--dos-cyan); letter-spacing: 2px;
+  margin: 32px 0 10px; border-bottom: 1px solid var(--dos-dim); padding-bottom: 6px;
+}
+h3 { font-size: 0.92rem; color: var(--dos-amber); margin: 20px 0 6px; }
+p { margin-bottom: 12px; }
+ul { margin: 0 0 14px 20px; }
+li { margin-bottom: 6px; }
+a { color: var(--dos-cyan); }
+strong { color: var(--dos-amber); }
+.box {
+  border: 1px solid var(--dos-dim);
+  background: rgba(0,14,4,0.6);
+  padding: 16px 18px; margin-bottom: 18px;
+}
+.hinweis {
+  border: 1px solid var(--dos-amber);
+  background: rgba(45,28,0,0.45);
+  padding: 14px 18px; margin: 24px 0;
+  font-size: 0.88rem;
+}
+.footer {
+  margin-top: 44px; text-align: center;
+  color: var(--dos-dim); font-size: 0.78rem; line-height: 1.7;
+  border-top: 1px solid var(--dos-dim); padding-top: 18px;
+}
+.footer a { color: var(--dos-dim); }
