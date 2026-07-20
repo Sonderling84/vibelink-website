@@ -73,7 +73,10 @@
   .card p { margin: 0 0 8px; line-height: 1.65; font-size: 0.92rem; color: #bdf5bd; }
   .card .nr { color: var(--dos-amber); }
 
-  .raster { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+  /* 400px sorgt dafuer, dass es bei 940px Breite genau ZWEI Spalten werden.
+     Mit 280px wurden es drei — dann standen die vier Kacheln als 3+1 da und
+     der Text war zu schmal zum Lesen. */
+  .raster { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 16px; }
 
   .platt { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin: 6px 0 4px; }
   .plattform {
@@ -108,7 +111,8 @@
 
 <div class="video-bg-container">
   <!-- Hintergruende einfach nach media/login/ legen — sie erscheinen automatisch. -->
-  <video class="video-bg" id="loginBgVideo" data-bereich="login" data-fallback="startseite.mp4"
+  <video class="video-bg" id="loginBgVideo" data-bereich="login"
+         data-fallback="startseite.mp4,startseite2.mp4"
          autoplay muted loop playsinline></video>
 </div>
 <div class="overlay"></div>
