@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VIBE.LINK — Abo &amp; Login-Bereich</title>
+<meta name="description" content="Ein Abo auf Twitch, Kick oder YouTube schaltet alles frei: Apps zum Download, das Second Brain als Vorlage, eine direkte Mail-Adresse und exklusive Bilder.">
+<link rel="stylesheet" href="fonts.css">
+<style>
+  :root {
+    --dos-bg: #050a05;
+    --dos-green: #33ff33;
+    --dos-dim: #1f8f2f;
+    --dos-cyan: #33e0e0;
+    --dos-amber: #ffb000;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--dos-bg);
+    color: var(--dos-green);
+    font-family: "Courier New", Courier, monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  .video-bg-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; overflow: hidden; }
+  .video-bg {
+    position: absolute; top: 50%; left: 50%;
+    min-width: 100%; min-height: 100%; width: auto; height: auto;
+    transform: translate(-50%, -50%); object-fit: cover;
+  }
+  .overlay { position: fixed; inset: 0; z-index: 1; background: rgba(0, 12, 0, 0.76); }
+  .scanlines {
+    position: fixed; inset: 0; z-index: 2; pointer-events: none;
+    background: repeating-linear-gradient(to bottom,
+      rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0,0,0,0.25) 3px, rgba(0,0,0,0) 4px);
+  }
+
+  .menubar {
+    position: relative; z-index: 5;
+    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+    background: rgba(0,0,0,0.85);
+    border-bottom: 1px solid var(--dos-dim);
+    padding: 6px 10px; font-size: 0.9rem;
+  }
+  .menubar a, .menubar span { color: var(--dos-green); text-decoration: none; padding: 3px 10px; }
+  .menubar a:hover { background: var(--dos-green); color: #000; }
+  .menubar .active { background: #000; color: var(--dos-cyan); border: 1px solid var(--dos-dim); }
+  .menubar .zurueck { color: var(--dos-cyan); border: 1px solid var(--dos-cyan); cursor: pointer; font-weight: bold; }
+
+  .wrap { position: relative; z-index: 5; max-width: 940px; margin: 0 auto; padding: 28px 18px 60px; }
+
+  .logo {
+    font-size: clamp(1.8rem, 6vw, 3.4rem); letter-spacing: 6px;
+    color: var(--dos-amber); text-shadow: 0 0 20px rgba(255,176,0,0.45);
+    margin: 10px 0 2px;
+  }
+  .sub { color: var(--dos-dim); letter-spacing: 2px; font-size: 0.8rem; margin-bottom: 8px; }
+  .prompt { color: var(--dos-amber); margin: 24px 0 12px; font-size: 0.9rem; }
+
+  .intro {
+    background: rgba(0,14,4,0.85); border-left: 3px solid var(--dos-amber);
+    padding: 18px 22px; margin: 22px 0 8px; line-height: 1.75; color: #d9f7d9;
+  }
+  .intro strong { color: var(--dos-amber); }
+
+  .card {
+    background: rgba(0, 14, 4, 0.82);
+    border: 1px solid var(--dos-dim);
+    padding: 18px 20px; margin-bottom: 16px;
+  }
+  .card h2 { margin: 0 0 8px; font-size: 1rem; color: var(--dos-cyan); letter-spacing: 2px; }
+  .card p { margin: 0 0 8px; line-height: 1.65; font-size: 0.92rem; color: #bdf5bd; }
+  .card .nr { color: var(--dos-amber); }
+
+  .raster { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+
+  .platt { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin: 6px 0 4px; }
+  .plattform {
+    display: block; text-align: center; text-decoration: none;
+    border: 1px solid var(--dos-dim); background: rgba(0,0,0,0.55);
+    padding: 20px 14px; transition: all .15s;
+  }
+  .plattform:hover { border-color: var(--dos-amber); background: rgba(30,20,0,0.6); }
+  .plattform .name { display: block; font-size: 1.15rem; letter-spacing: 3px; color: var(--dos-amber); margin-bottom: 4px; }
+  .plattform .was { display: block; font-size: 0.76rem; color: var(--dos-dim); letter-spacing: 1px; }
+
+  .btn {
+    display: inline-block; margin-top: 10px; padding: 10px 20px;
+    border: 1px solid var(--dos-green); color: var(--dos-green);
+    text-decoration: none; letter-spacing: 2px; font-size: 0.85rem;
+  }
+  .btn:hover { background: var(--dos-green); color: #000; }
+  .btn.amber { border-color: var(--dos-amber); color: var(--dos-amber); }
+  .btn.amber:hover { background: var(--dos-amber); color: #000; }
+
+  .hinweis {
+    border: 1px solid var(--dos-amber); background: rgba(45,28,0,0.5);
+    padding: 14px 18px; margin: 26px 0; font-size: 0.88rem; line-height: 1.65; color: #ffe0a0;
+  }
+  .tag { display: inline-block; border: 1px solid var(--dos-dim); color: var(--dos-dim);
+         padding: 2px 8px; margin: 6px 4px 0 0; font-size: 0.75rem; }
+  .footer { margin-top: 44px; text-align: center; color: var(--dos-dim); font-size: 0.78rem; line-height: 1.7; }
+  .footer a { color: inherit; }
+</style>
+</head>
+<body>
+
+<div class="video-bg-container">
+  <!-- Hintergruende einfach nach media/login/ legen — sie erscheinen automatisch. -->
+  <video class="video-bg" id="loginBgVideo" data-bereich="login" data-fallback="startseite.mp4"
+         autoplay muted loop playsinline></video>
+</div>
+<div class="overlay"></div>
+<div class="scanlines"></div>
+
+<div class="menubar">
+  <span>≡ SYSTEM</span>
+  <span class="zurueck" onclick="if(history.length>1){history.back()}else{location.href='index.html'}">◀ ZURÜCK</span>
+  <a href="index.html">Startseite</a>
+  <a href="ki.html">KI</a>
+  <a href="blog.html">Blog</a>
+  <span class="active">LOGIN / ABO</span>
+</div>
+
+<div class="wrap">
+  <div class="logo">LOGIN &amp; ABO</div>
+  <div class="sub">DEIN ZUGANG ZU ALLEM, WAS ICH BAUE</div>
+
+  <div class="intro">
+    Ein Abo auf <strong>Twitch</strong>, <strong>Kick</strong> oder <strong>YouTube</strong> ist
+    gleichzeitig deine Lizenz. Damit bekommst du nicht nur einen Chat-Emote, sondern echte
+    Werkzeuge: meine Apps zum Herunterladen, meine komplette Arbeitsstruktur als Vorlage,
+    einen direkten Draht zu mir — und Bilder, die es sonst nirgends gibt.
+    <br><br>
+    <strong>Egal auf welcher der drei Plattformen du abonnierst</strong> — freigeschaltet wird
+    immer alles. Such dir die aus, auf der du sowieso unterwegs bist.
+  </div>
+
+  <div class="prompt">C:\ABO&gt; dir /w █</div>
+
+  <div class="raster">
+
+    <div class="card">
+      <h2><span class="nr">[01]</span> ▸ APPS ZUM DOWNLOAD</h2>
+      <p>
+        Das <strong>iRacing Telemetry Dashboard</strong> mit 21 Overlays — Reifentemperaturen,
+        Abstände, Radar, Rundenanalyse, Streaming-Einblendungen. Läuft neben iRacing und SimHub.
+      </p>
+      <p>
+        Dazu der <strong>Poker-Coach</strong>: liest den Tisch mit und rechnet dir vor, was
+        die Situation hergibt. Wird laufend ausgebaut.
+      </p>
+      <p>Neue Apps kommen dazu — als Abonnent hast du sie automatisch.</p>
+      <a class="btn" href="https://ganster.tech" target="_blank" rel="noopener">▶ APP ANSEHEN</a>
+      <div>
+        <span class="tag">#iracing</span><span class="tag">#overlays</span><span class="tag">#poker</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="nr">[02]</span> ▸ MEIN SECOND BRAIN ALS VORLAGE</h2>
+      <p>
+        Die Struktur, mit der ich arbeite — komplett, mit Erklärungen zu jedem Ordner und
+        jeder Datei: wofür er da ist, was reingehört, wie ich ihn benutze.
+      </p>
+      <p>
+        Kein leeres Gerüst zum Selbstausdenken, sondern ein System, das im Alltag läuft.
+        Du kopierst es dir und passt es an.
+      </p>
+      <div>
+        <span class="tag">#wissen</span><span class="tag">#struktur</span><span class="tag">#vorlage</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="nr">[03]</span> ▸ DIREKTER DRAHT ZU MIR</h2>
+      <p>
+        Eine eigene Mail-Adresse nur für Abonnenten. Keine Warteschlange, kein Ticket-System —
+        du schreibst, ich antworte.
+      </p>
+      <p>
+        Fragen zur App, Wünsche für neue Funktionen, Probleme beim Einrichten. Die Adresse
+        bekommst du nach dem Abo, sie steht bewusst nirgends öffentlich.
+      </p>
+      <div>
+        <span class="tag">#support</span><span class="tag">#direkt</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="nr">[04]</span> ▸ EXKLUSIVE BILDER</h2>
+      <p>
+        Bestimmte Arbeiten aus Epoxidharz biete ich <strong>nur hier</strong> an — nicht in
+        der öffentlichen Galerie, nicht anderswo.
+      </p>
+      <p>
+        Einzelstücke, unregelmäßig, in kleiner Zahl. Wer im Login-Bereich ist, sieht sie zuerst.
+      </p>
+      <div>
+        <span class="tag">#kunst</span><span class="tag">#epoxid</span><span class="tag">#unikat</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="prompt">C:\ABO&gt; wo abonnieren? █</div>
+
+  <div class="platt">
+    <a class="plattform" href="https://www.twitch.tv/vibelink" target="_blank" rel="noopener">
+      <span class="name">TWITCH</span>
+      <span class="was">twitch.tv/vibelink</span>
+    </a>
+    <a class="plattform" href="https://kick.com/vibelink" target="_blank" rel="noopener">
+      <span class="name">KICK</span>
+      <span class="was">kick.com/vibelink</span>
+    </a>
+    <a class="plattform" href="https://www.youtube.com/@vibelink" target="_blank" rel="noopener">
+      <span class="name">YOUTUBE</span>
+      <span class="was">youtube.com/@vibelink</span>
+    </a>
+  </div>
+
+  <div class="hinweis">
+    <strong>⚠ Der automatische Login wird gerade gebaut.</strong><br><br>
+    Die Abo-Prüfung über Twitch, Kick und YouTube ist noch nicht fertig. Wenn du schon
+    abonniert hast und jetzt loslegen willst: schreib mir einfach kurz — dann schalte ich
+    dich von Hand frei, meist noch am selben Tag.<br><br>
+    <a class="btn amber" href="mailto:T.ganster.dev@gmail.com?subject=Abo%20freischalten&amp;body=Hallo%20Tobias%2C%0A%0Aich%20habe%20auf%20folgender%20Plattform%20abonniert%3A%20%0AMein%20Benutzername%20dort%3A%20%0A%0AViele%20Gr%C3%BC%C3%9Fe">✉ FREISCHALTUNG ANFRAGEN</a>
+    <a class="btn" href="https://discord.gg/vibelink" target="_blank" rel="noopener">▶ DISCORD</a>
+  </div>
+
+  <div class="card">
+    <h2>▸ NOCH UNSICHER?</h2>
+    <p>
+      Schau dir erst an, was ich baue. Die App gibt es aktuell als offene Beta zum
+      Ausprobieren, und im Blog kannst du live mitlesen, woran ich gerade sitze.
+    </p>
+    <a class="btn" href="https://ganster.tech" target="_blank" rel="noopener">▶ APP TESTEN</a>
+    <a class="btn" href="blog.html">▶ ZUM BLOG</a>
+  </div>
+
+  <div class="footer">
+    ═══ EOF ═══<br>
+    <a href="index.html">Startseite</a> ·
+    <a href="ki.html">KI</a> ·
+    <a href="blog.html">Blog</a> ·
+    <a href="impressum.html">Impressum</a> ·
+    <a href="datenschutz.html">Datenschutz</a><br>
+    © 2026 Vibe.Link · Tobias Ganster
+  </div>
+</div>
+
+<script src="bg-rotator.js" defer></script>
+<script src="zaehler.js" defer></script>
+</body>
+</html>
