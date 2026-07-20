@@ -12,7 +12,7 @@
   neuer Datenschutz-Sachverhalt.
   ---------------------------------------------------------------
 */
-$SCHLUESSEL = 'vibelink-2026';   // muss zum Dashboard passen
+$SCHLUESSEL = 'vl-neon-racer-4471';   // muss zum Dashboard passen
 
 header('Content-Type: application/json; charset=utf-8');
 

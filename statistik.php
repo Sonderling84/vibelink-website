@@ -4,7 +4,7 @@
   Aufruf: https://tobiasganster.de/statistik.php?key=DEIN-SCHLUESSEL
   Den Schluessel unten aendern, wenn du willst.
 */
-$SCHLUESSEL = 'vibelink-2026';
+$SCHLUESSEL = 'vl-neon-racer-4471';
 
 if (!isset($_GET['key']) || $_GET['key'] !== $SCHLUESSEL) {
     header('HTTP/1.1 403 Forbidden');
